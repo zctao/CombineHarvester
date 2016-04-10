@@ -72,6 +72,7 @@ int main(int argc, char** argv) {
   bool auto_rebin = false;
   bool manual_rebin = false;
   int control_region = 0;
+  int validation = 0;
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
@@ -85,7 +86,8 @@ int main(int argc, char** argv) {
     ("manual_rebin", po::value<bool>(&manual_rebin)->default_value(false))
     ("output_folder", po::value<string>(&output_folder)->default_value("mssm_run2"))
     ("SM125,h", po::value<string>(&SM125)->default_value(SM125))
-    ("control_region", po::value<int>(&control_region)->default_value(0));
+    ("control_region", po::value<int>(&control_region)->default_value(0))
+    ("validation", po::value<int>(&validation)->default_value(0));
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
 
@@ -232,11 +234,19 @@ int main(int argc, char** argv) {
     }
   });
 
-  // And convert any shapes in the CRs to lnN:
-  // Convert all shapes to lnN at this stage
-  cb.cp().FilterSysts(BinIsNotControlRegion).syst_type({"shape"}).ForEachSyst([](ch::Systematic *sys) {
-    sys->set_type("lnN");
-  });
+  // And convert any shapes in the CRs to lnN,
+  // unless we're in validation mode == 1 (OS high mT) in which case
+  // leave the full shapes in these categoriess
+  if (validation == 1) {
+    cb.cp().FilterSysts(BinIsNotControlRegion).syst_type({"shape"}).ForEachSyst([](ch::Systematic *sys) {
+      if (sys->bin_id() == 10 || sys->bin_id() == 13) return;
+      sys->set_type("lnN");
+    });
+  } else {
+    cb.cp().FilterSysts(BinIsNotControlRegion).syst_type({"shape"}).ForEachSyst([](ch::Systematic *sys) {
+      sys->set_type("lnN");
+    });
+  }
 
    //Replacing observation with the sum of the backgrounds (asimov) - nice to ensure blinding
     auto bins = cb.cp().bin_set();
@@ -250,8 +260,14 @@ int main(int argc, char** argv) {
       });
     }
     // Merge to one bin for control region bins
-    cb.cp().FilterAll(BinIsNotControlRegion).ForEachProc(To1Bin<ch::Process>);
-    cb.cp().FilterAll(BinIsNotControlRegion).ForEachObs(To1Bin<ch::Observation>);
+    if (validation == 1) {
+      // Except if the OS high mT region is going to be validated
+      cb.cp().FilterAll(BinIsNotControlRegion).bin_id({10, 13}, false).ForEachProc(To1Bin<ch::Process>);
+      cb.cp().FilterAll(BinIsNotControlRegion).bin_id({10, 13}, false).ForEachObs(To1Bin<ch::Observation>);
+    } else {
+      cb.cp().FilterAll(BinIsNotControlRegion).ForEachProc(To1Bin<ch::Process>);
+      cb.cp().FilterAll(BinIsNotControlRegion).ForEachObs(To1Bin<ch::Observation>);
+    }
 
 
   auto rebin = ch::AutoRebin()
@@ -289,8 +305,14 @@ int main(int argc, char** argv) {
     .SetFixNorm(false)  // contrary to signal region, bbb *should* change yield here
     .SetVerbosity(1);
   // Will merge but only for non W and QCD processes, to be on the safe side
-  bbb_ctl.MergeBinErrors(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotControlRegion));
-  bbb_ctl.AddBinByBin(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotControlRegion), cb);
+  if (validation == 1) {
+    // We do want bbb if doing the OS high mT validation because we have full shapes
+    bbb_ctl.MergeBinErrors(cb.cp().FilterProcs(BinIsNotControlRegion));
+    bbb_ctl.AddBinByBin(cb.cp().FilterProcs(BinIsNotControlRegion), cb);
+  } else {
+    bbb_ctl.MergeBinErrors(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotControlRegion));
+    bbb_ctl.AddBinByBin(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotControlRegion), cb);    
+  }
   cout << " done\n";
 
   //Switch JES over to lnN:
@@ -302,6 +324,17 @@ int main(int argc, char** argv) {
   ch::SetStandardBinNames(cb);
   //! [part8]
 
+  if (validation == 1) {
+    cb.cp().channel({"mt", "et"}).bin_id({8, 9}).ForEachObj([](ch::Object *obj) {
+      if (!obj->signal()) return;
+      // Move nobtag and btag signals to OS high mT control region
+      if (obj->bin_id() == 8) obj->set_bin_id(10);
+      if (obj->bin_id() == 9) obj->set_bin_id(13);
+      ch::SetStandardBinName(obj, "$ANALYSIS_$CHANNEL_$BINID_$ERA");
+    });
+    // Now drop the low mT regions
+    cb.bin_id({10, 12, 13, 15});
+  }
 
   //! [part9]
   // First we generate a set of bin names:
