@@ -2,6 +2,7 @@
 #include "boost/program_options.hpp"
 #include "boost/format.hpp"
 #include "TSystem.h"
+#include "TParameter.h"
 #include "CombineHarvester/CombineTools/interface/CombineHarvester.h"
 #include "CombineHarvester/CombineTools/interface/ParseCombineWorkspace.h"
 #include "CombineHarvester/CombineTools/interface/TFileIO.h"
@@ -101,6 +102,8 @@ int main(int argc, char* argv[]) {
   cmb.SetFlag("workspaces-use-clone", true);
   ch::ParseCombineWorkspace(cmb, *ws, "ModelConfig", "data_obs", false);
 
+
+  std::vector<TParameter<float> > params;
   // Only evaluate in case parameters to freeze are provided
   if(! freeze_arg.empty())
   {
@@ -114,6 +117,7 @@ int main(int argc, char* argv[]) {
         if (par) par->set_frozen(true);
         else throw std::runtime_error(
           FNERROR("Requested variable to freeze does not exist in workspace"));
+        params.emplace_back(parts[0].c_str(), float(par->val()));
       } else {
         if (parts.size() == 2) {
           ch::Parameter *par = cmb.GetParameter(parts[0]);
@@ -123,6 +127,7 @@ int main(int argc, char* argv[]) {
           }
           else throw std::runtime_error(
             FNERROR("Requested variable to freeze does not exist in workspace"));
+          params.emplace_back(parts[0].c_str(), float(par->val()));
         }
       }
     }
@@ -187,6 +192,9 @@ int main(int argc, char* argv[]) {
     outfile.cd();
     for (auto& iter : pre_shapes[bin]) {
       ch::WriteToTFile(&(iter.second), &outfile, bin + "_prefit/" + iter.first);
+    }
+    for (auto& par : params) {
+      ch::WriteUnnamedToTFile(&par, &outfile, bin+"_prefit/"+par.GetName());
     }
   }
 
@@ -278,6 +286,9 @@ int main(int argc, char* argv[]) {
       for (auto & iter : post_shapes[bin]) {
         ch::WriteToTFile(&(iter.second), &outfile,
                          bin + "_postfit/" + iter.first);
+        for (auto& par : params) {
+          ch::WriteUnnamedToTFile(&par, &outfile, bin+"_prefit/"+par.GetName());
+        }
       }
     }
   }
