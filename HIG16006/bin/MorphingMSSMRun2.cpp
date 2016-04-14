@@ -264,6 +264,18 @@ int main(int argc, char** argv) {
       // Except if the OS high mT region is going to be validated
       cb.cp().FilterAll(BinIsNotControlRegion).bin_id({10, 13}, false).ForEachProc(To1Bin<ch::Process>);
       cb.cp().FilterAll(BinIsNotControlRegion).bin_id({10, 13}, false).ForEachObs(To1Bin<ch::Observation>);
+
+      cb.cp().channel({"mt", "et"}).bin_id({8, 9}).ForEachObj([](ch::Object *obj) {
+        if (!obj->signal()) return;
+        // Move nobtag and btag signals to OS high mT control region
+        if (obj->bin_id() == 8) obj->set_bin_id(10);
+        if (obj->bin_id() == 9) obj->set_bin_id(13);
+        string newbin = obj->bin();
+        boost::replace_all(newbin,"_wjets_cr", "");
+        obj->set_bin(newbin);
+      });
+      // Now drop the low mT regions
+      cb.bin_id({10, 12, 13, 15});
     } else {
       cb.cp().FilterAll(BinIsNotControlRegion).ForEachProc(To1Bin<ch::Process>);
       cb.cp().FilterAll(BinIsNotControlRegion).ForEachObs(To1Bin<ch::Observation>);
@@ -324,17 +336,6 @@ int main(int argc, char** argv) {
   ch::SetStandardBinNames(cb);
   //! [part8]
 
-  if (validation == 1) {
-    cb.cp().channel({"mt", "et"}).bin_id({8, 9}).ForEachObj([](ch::Object *obj) {
-      if (!obj->signal()) return;
-      // Move nobtag and btag signals to OS high mT control region
-      if (obj->bin_id() == 8) obj->set_bin_id(10);
-      if (obj->bin_id() == 9) obj->set_bin_id(13);
-      ch::SetStandardBinName(obj, "$ANALYSIS_$CHANNEL_$BINID_$ERA");
-    });
-    // Now drop the low mT regions
-    cb.bin_id({10, 12, 13, 15});
-  }
 
   //! [part9]
   // First we generate a set of bin names:

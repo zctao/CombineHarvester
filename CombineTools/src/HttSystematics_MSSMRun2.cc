@@ -463,7 +463,7 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region = 0) {
       }
       // Should set a sensible range for our rateParams
       for (auto sys : cb.cp().syst_type({"rateParam"}).syst_name_set()) {
-        cb.GetParameter(sys)->set_range(0.0, 2.0);
+        cb.GetParameter(sys)->set_range(0.0, 5.0);
       }
       cb.SetFlag("filters-use-regex", false);
     }
