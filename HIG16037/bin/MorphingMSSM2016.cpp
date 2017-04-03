@@ -606,6 +606,6 @@ int main(int argc, char** argv) {
   writer.WriteCards("htt_cmb_8_13TeV", cb.cp().bin_id({8, 10, 11, 12}));
   writer.WriteCards("htt_cmb_9_13TeV", cb.cp().bin_id({9, 13, 14, 15}));
 
-  cb.PrintAll();
+  // cb.PrintAll();
   cout << " done\n";
 }
