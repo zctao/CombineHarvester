@@ -19,6 +19,7 @@
 #include "CombineHarvester/CombineTools/interface/Algorithm.h"
 #include "CombineHarvester/CombineTools/interface/AutoRebin.h"
 #include "CombineHarvester/CombinePdfs/interface/MorphFunctions.h"
+#include "CombineHarvester/CombinePdfs/interface/CMSHistFuncFactory.h"
 #include "CombineHarvester/MSSMFull2016/interface/HttSystematics_MSSMRun2.h"
 #include "RooWorkspace.h"
 #include "RooRealVar.h"
@@ -537,19 +538,35 @@ int main(int argc, char** argv) {
       {"bbH", &mA}
     };
   }
+  // if (do_morphing) {
+  //   auto bins = cb.bin_set();
+  //   for (auto b : bins) {
+  //     auto procs = cb.cp().bin({b}).process(ch::JoinStr({signal_types["ggH"], signal_types["bbH"]})).process_set();
+  //     for (auto p : procs) {
+  //       ch::BuildRooMorphing(ws, cb, b, p, *(mass_var[p]),
+  //                            "norm", true, false, false, &demo);
+  //     }
+  //   }
+  // }
   if (do_morphing) {
-    auto bins = cb.bin_set();
-    for (auto b : bins) {
-      auto procs = cb.cp().bin({b}).process(ch::JoinStr({signal_types["ggH"], signal_types["bbH"]})).process_set();
-      for (auto p : procs) {
-        ch::BuildRooMorphing(ws, cb, b, p, *(mass_var[p]),
-                             "norm", true, false, false, &demo);
-      }
-    }
+    ch::CMSHistFuncFactory hf_factory;
+    hf_factory.SetHorizontalMorphingVariable(mA);
+    hf_factory.Run(cb, ws);
+    // exit(0);
+    // auto bins = cb.bin_set();
+    // for (auto b : bins) {
+    //   auto procs = cb.cp().bin({b}).process_set();
+    //   for (auto p : procs) {
+    //     ch::BuildRooMorphing(ws, cb, b, p, *(mass_var[p]),
+    //                          "norm", true, false, false, &demo);
+    //   }
+    // }
   }
+
   demo.Close();
   cb.AddWorkspace(ws);
-  cb.cp().process(ch::JoinStr({signal_types["ggH"], signal_types["bbH"]})).ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
+  // cb.cp().process(ch::JoinStr({signal_types["ggH"], signal_types["bbH"]})).ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
+  cb.ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
 
 
  //Write out datacards. Naming convention important for rest of workflow. We

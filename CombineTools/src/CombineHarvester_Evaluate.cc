@@ -384,7 +384,8 @@ TH1F CombineHarvester::GetShapeInternal(ProcSystMap const& lookup,
           procs_[i]->pdf()->createHistogram(var_name.c_str()));
       TH1F proc_shape = *tmp;
       delete tmp;
-      if (!procs_[i]->pdf()->selfNormalized()) {
+      RooAbsPdf const* aspdf = dynamic_cast<RooAbsPdf const*>(procs_[i]->pdf());
+      if (aspdf && !aspdf->selfNormalized()) {
         // LOGLINE(log(), "Have a pdf that is not selfNormalized");
         // std::cout << "Integral: " << proc_shape.Integral() << "\n";
         if (proc_shape.Integral() > 0.) {

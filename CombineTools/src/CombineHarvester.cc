@@ -91,7 +91,7 @@ CombineHarvester CombineHarvester::deep() {
 
   // Build a map of workspace object pointers
   std::map<RooAbsData const*, RooAbsData *> dat_map;
-  std::map<RooAbsPdf  const*, RooAbsPdf  *> pdf_map;
+  std::map<RooAbsReal  const*, RooAbsReal  *> pdf_map;
   std::map<RooRealVar const*, RooRealVar *> var_map;
   std::map<RooAbsReal const*, RooAbsReal *> fun_map;
 
@@ -407,7 +407,7 @@ void CombineHarvester::LoadShapes(Process* entry,
     // Pre-condition #3
     // Try and get this as RooAbsData first. If this doesn't work try pdf
     RooAbsData* data = mapping.ws->data(mapping.WorkspaceObj().c_str());
-    RooAbsPdf* pdf = mapping.ws->pdf(mapping.WorkspaceObj().c_str());
+    RooAbsReal* pdf = mapping.ws->function(mapping.WorkspaceObj().c_str());
     if (data) {
       if (verbosity_ >= 2) {
         data->printStream(log(), data->defaultPrintContents(0),

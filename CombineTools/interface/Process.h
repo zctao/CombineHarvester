@@ -46,8 +46,8 @@ class Process : public Object {
 
   TH1F ShapeAsTH1F() const;
 
-  void set_pdf(RooAbsPdf* pdf) { pdf_ = pdf; }
-  RooAbsPdf const* pdf() const { return pdf_; }
+  void set_pdf(RooAbsReal* pdf) { pdf_ = pdf; }
+  RooAbsReal const* pdf() const { return pdf_; }
 
   void set_data(RooAbsData* data) { data_ = data; }
   RooAbsData const* data() const { return data_; }
@@ -61,7 +61,7 @@ class Process : public Object {
  private:
   double rate_;
   std::unique_ptr<TH1> shape_;
-  RooAbsPdf* pdf_;
+  RooAbsReal* pdf_;
   RooAbsData* data_;
   RooAbsReal* norm_;
 
