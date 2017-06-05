@@ -730,4 +730,12 @@ void CombineHarvester::RenameGroup(std::string const& oldname,
     }
   }
 }
+
+void CombineHarvester::AddDatacardLineAtEnd(std::string const& line) {
+  post_lines_.push_back(line);
+}
+
+void CombineHarvester::ClearDatacardLinesAtEnd() {
+  post_lines_.clear();
+}
 }

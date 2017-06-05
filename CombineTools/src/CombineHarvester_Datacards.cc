@@ -1116,6 +1116,10 @@ void CombineHarvester::WriteDatacard(std::string const& name,
     txt_file << "\n";
   }
 
+  for (auto const& postl : post_lines_) {
+    txt_file << postl << "\n";
+  }
+
   txt_file.close();
 }
 

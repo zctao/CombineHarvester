@@ -81,6 +81,7 @@ int main(int argc, char** argv) {
   bool do_w_weighting = true;
   bool zmm_fit = true;
   bool do_jetfakes = false;
+  int use_histfunc = 0;
   string chan;
   po::variables_map vm;
   po::options_description config("configuration");
@@ -103,7 +104,8 @@ int main(int argc, char** argv) {
     ("channel", po::value<string>(&chan)->default_value("all"))
     ("check_neg_bins", po::value<bool>(&check_neg_bins)->default_value(false))
     ("poisson_bbb", po::value<bool>(&poisson_bbb)->default_value(false))
-    ("w_weighting", po::value<bool>(&do_w_weighting)->default_value(false));
+    ("w_weighting", po::value<bool>(&do_w_weighting)->default_value(false))
+    ("use_histfunc", po::value<int>(&use_histfunc)->default_value(0));
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
 
@@ -483,31 +485,33 @@ int main(int argc, char** argv) {
     }
   });
 
-  cout << "Generating bbb uncertainties...";
-  auto bbb = ch::BinByBinFactory()
-    .SetPattern("CMS_$ANALYSIS_$BIN_$ERA_$PROCESS_bin_$#")
-    .SetAddThreshold(0.)
-    .SetMergeThreshold(0.4)
-    .SetFixNorm(true)
-    .SetMergeSaturatedBins(false)
-    .SetPoissonErrors(poisson_bbb);
-  for (auto chn : chns) {
-    std::cout << " - Doing bbb for channel " << chn << "\n";
-    bbb.MergeAndAdd(cb.cp().channel({chn}).process({"ZTT", "QCD", "W", "ZJ", "ZL", "TT", "VV", "Ztt", "ttbar", "EWK", "Fakes", "ZMM", "TTT","TTJ","VVT","VVJ", "WJets", "Dibosons"}).FilterAll([](ch::Object const* obj) {
-                return BinIsControlRegion(obj);
-                }), cb);
+  if (use_histfunc != 2) {
+    cout << "Generating bbb uncertainties...";
+    auto bbb = ch::BinByBinFactory()
+      .SetPattern("CMS_$ANALYSIS_$BIN_$ERA_$PROCESS_bin_$#")
+      .SetAddThreshold(0.)
+      .SetMergeThreshold(0.4)
+      .SetFixNorm(true)
+      .SetMergeSaturatedBins(false)
+      .SetPoissonErrors(poisson_bbb);
+    for (auto chn : chns) {
+      std::cout << " - Doing bbb for channel " << chn << "\n";
+      bbb.MergeAndAdd(cb.cp().channel({chn}).process({"ZTT", "QCD", "W", "ZJ", "ZL", "TT", "VV", "Ztt", "ttbar", "EWK", "Fakes", "ZMM", "TTT","TTJ","VVT","VVJ", "WJets", "Dibosons"}).FilterAll([](ch::Object const* obj) {
+                  return BinIsControlRegion(obj);
+                  }), cb);
+    }
+    // And now do bbb for the control region with a slightly different config:
+    auto bbb_ctl = ch::BinByBinFactory()
+      .SetPattern("CMS_$ANALYSIS_$BIN_$ERA_$PROCESS_bin_$#")
+      .SetAddThreshold(0.)
+      .SetMergeThreshold(0.4)
+      .SetFixNorm(false)  // contrary to signal region, bbb *should* change yield here
+      .SetVerbosity(1);
+    // Will merge but only for non W and QCD processes, to be on the safe side
+    bbb_ctl.MergeBinErrors(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotControlRegion));
+    bbb_ctl.AddBinByBin(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotControlRegion), cb);
+    cout << " done\n";
   }
-  // And now do bbb for the control region with a slightly different config:
-  auto bbb_ctl = ch::BinByBinFactory()
-    .SetPattern("CMS_$ANALYSIS_$BIN_$ERA_$PROCESS_bin_$#")
-    .SetAddThreshold(0.)
-    .SetMergeThreshold(0.4)
-    .SetFixNorm(false)  // contrary to signal region, bbb *should* change yield here
-    .SetVerbosity(1);
-  // Will merge but only for non W and QCD processes, to be on the safe side
-  bbb_ctl.MergeBinErrors(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotControlRegion));
-  bbb_ctl.AddBinByBin(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotControlRegion), cb);
-  cout << " done\n";
 
   //Switch JES over to lnN:
   /*cb.cp().syst_name({"CMS_scale_j_13TeV"}).ForEachSyst([](ch::Systematic *sys) { sys->set_type("lnN");});
@@ -538,35 +542,40 @@ int main(int argc, char** argv) {
       {"bbH", &mA}
     };
   }
-  // if (do_morphing) {
-  //   auto bins = cb.bin_set();
-  //   for (auto b : bins) {
-  //     auto procs = cb.cp().bin({b}).process(ch::JoinStr({signal_types["ggH"], signal_types["bbH"]})).process_set();
-  //     for (auto p : procs) {
-  //       ch::BuildRooMorphing(ws, cb, b, p, *(mass_var[p]),
-  //                            "norm", true, false, false, &demo);
-  //     }
-  //   }
-  // }
-  if (do_morphing) {
+  if (do_morphing && !use_histfunc) {
+    auto bins = cb.bin_set();
+    for (auto b : bins) {
+      auto procs = cb.cp().bin({b}).process(ch::JoinStr({signal_types["ggH"], signal_types["bbH"]})).process_set();
+      for (auto p : procs) {
+        ch::BuildRooMorphing(ws, cb, b, p, *(mass_var[p]),
+                             "norm", true, false, false, &demo);
+      }
+    }
+  }
+  if (do_morphing && use_histfunc) {
     ch::CMSHistFuncFactory hf_factory;
     hf_factory.SetHorizontalMorphingVariable(mA);
     hf_factory.Run(cb, ws);
-    // exit(0);
-    // auto bins = cb.bin_set();
-    // for (auto b : bins) {
-    //   auto procs = cb.cp().bin({b}).process_set();
-    //   for (auto p : procs) {
-    //     ch::BuildRooMorphing(ws, cb, b, p, *(mass_var[p]),
-    //                          "norm", true, false, false, &demo);
-    //   }
-    // }
   }
 
   demo.Close();
+  if (use_histfunc) {
+    cb.SetFlag("workspaces-use-clone", true);
+  }
   cb.AddWorkspace(ws);
-  // cb.cp().process(ch::JoinStr({signal_types["ggH"], signal_types["bbH"]})).ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
-  cb.ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
+
+  if (!use_histfunc) {
+    cb.cp().process(ch::JoinStr({signal_types["ggH"], signal_types["bbH"]})).ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
+  }
+  if (use_histfunc) {
+    cb.ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
+    cb.ExtractData("htt", "$BIN_$PROCESS_morph");
+    if (use_histfunc == 1) {
+      cb.AddDatacardLineAtEnd("* autoMCStats -1");
+    } else if (use_histfunc == 2) {
+      cb.AddDatacardLineAtEnd("* autoMCStats 0");
+    }
+  }
 
 
  //Write out datacards. Naming convention important for rest of workflow. We

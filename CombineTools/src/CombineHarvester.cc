@@ -41,6 +41,7 @@ void swap(CombineHarvester& first, CombineHarvester& second) {
   swap(first.wspaces_, second.wspaces_);
   swap(first.verbosity_, second.verbosity_);
   swap(first.flags_, second.flags_);
+  swap(first.post_lines_, second.post_lines_);
   swap(first.log_, second.log_);
 }
 
@@ -51,6 +52,7 @@ CombineHarvester::CombineHarvester(CombineHarvester const& other)
       params_(other.params_),
       wspaces_(other.wspaces_),
       flags_(other.flags_),
+      post_lines_(other.post_lines_),
       verbosity_(other.verbosity_),
       log_(other.log_) {
   // std::cout << "[CombineHarvester] Copy-constructor called " << &other
@@ -87,6 +89,7 @@ CombineHarvester CombineHarvester::deep() {
   cpy.systs_.resize(systs_.size());
   cpy.flags_ = flags_;
   cpy.verbosity_ = verbosity_;
+  cpy.post_lines_ = post_lines_;
   cpy.log_ = log_;
 
   // Build a map of workspace object pointers
