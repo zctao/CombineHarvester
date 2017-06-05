@@ -16,7 +16,7 @@ using ch::syst::process;
 using ch::syst::bin;
 using ch::JoinStr;
 
-void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_fit) {
+void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_fit, bool ttbar_fit) {
   // Create a CombineHarvester clone that only contains the signal
   // categories
   CombineHarvester cb_sig = cb.cp();
@@ -27,13 +27,13 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
   if (control_region == 1){
     // we only want to cosider systematic uncertainties in the signal region.
     // limit to only the btag and nobtag categories
-    cb_sig.bin_id({8,9,10,11,12,13});
+    cb_sig.bin_id({1,8,9,10,11,12,13});
   }
 
   cb.cp().bin_id({8,9,10,11,14,15,16,17,18,19,21,24}).ForEachObj([&](ch::Object *obj){
       obj->set_attribute("tauiso","tight");
   });
-  cb.cp().bin_id({12,13,16,17,26,27,28,29,30,31}).ForEachObj([&](ch::Object *obj){
+  cb.cp().bin_id({12,13,26,27,28,29,30,31}).ForEachObj([&](ch::Object *obj){
       obj->set_attribute("tauiso","loose");
   });
 
@@ -56,7 +56,28 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
     obj->set_attribute("mtsel","high");
   });
 
+  cb.cp().channel({"em"}).bin_id({8,9}).ForEachObj([&](ch::Object *obj){
+    obj->set_attribute("pzeta","low");
+  });
 
+  cb.cp().channel({"em"}).bin_id({10,11}).ForEachObj([&](ch::Object *obj){
+    obj->set_attribute("pzeta","medium");
+  });
+
+  cb.cp().channel({"em"}).bin_id({12,13}).ForEachObj([&](ch::Object *obj){
+    obj->set_attribute("pzeta","high");
+  });
+
+ cb.cp().channel({"ttbar"}).ForEachObj([&](ch::Object *obj){
+   obj->set_attribute("pzeta","all");
+   obj->set_attribute("mtsel","all");
+   obj->set_attribute("cat","all");
+ });
+
+ cb.cp().channel({"zmm"}).ForEachObj([&](ch::Object *obj){
+   obj->set_attribute("mtsel","all");
+   obj->set_attribute("pzeta","all");
+ });
 
 
   std::vector<std::string> SM_procs = {"ggH_SM125", "qqH_SM125", "ZH_SM125", "WminusH_SM125","WplusH_SM125"};
@@ -100,10 +121,12 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
   cb.cp().AddSyst(cb, "CMS_eff_m", "lnN", SystMap<channel, process>::init
     ({"zmm"}, {"ZTT", "TT", "VV", "ZL"},  1.04)
     ({"zmm"}, {"ZJ"},  1.02)
+    ({"ttbar"}, {"ZTT","TT","VV","W","ZLL"}, 1.02)
     ({"mt"}, JoinStr({signal, {"ZTT", "TTT","TTJ", "VVT","VVJ", "ZL", "ZJ"}}),  1.02)
     ({"em"}, JoinStr({signal, {"ZTT", "TT", "VV", "ZLL"}}),       1.02));
   
   cb.cp().AddSyst(cb, "CMS_eff_e", "lnN", SystMap<channel, process>::init
+    ({"ttbar"}, {"ZTT","TT","VV","W","ZLL"}, 1.02)
     ({"et"}, JoinStr({signal, {"ZTT", "TTT","TTJ", "VVT","VVJ", "ZL", "ZJ"}}),  1.02)
     ({"em"}, JoinStr({signal, {"ZTT", "TT", "VV", "ZLL"}}),       1.02));
 
@@ -254,45 +277,48 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
     "CMS_eff_b_$ERA", "lnN", SystMapAsymm<channel,bin_id,process>::init
     ({"em"}, {10}, {"TT"}, 1.03,0.97)
     ({"em"}, {11}, {"TT"}, 0.99,1.01)
-    ({"em"}, {11}, {"VV"}, 0.99,1.02)
-    ({"em"}, {11}, {"ZLL"}, 0.99,1.02)
-    ({"em"}, {11}, {"ZTT"}, 0.97,1.02)
+    ({"em"}, {11}, {"VV"}, 0.99,1.01)
+    ({"em"}, {11}, {"ZLL"}, 0.99,1.01)
+    ({"em"}, {11}, {"ZTT"}, 0.98,1.02)
     ({"em"}, {11}, {bbH}, 0.98,1.02)
     ({"em"}, {11}, {ggH}, 0.99,1.01)
     ({"em"}, {12}, {"TT"}, 1.03,0.97)
     ({"em"}, {12}, {"VV"}, 1.01,0.99)
     ({"em"}, {12}, {bbH}, 1.01,0.99)
-    ({"em"}, {13}, {"TT"}, 0.99,1.02)
-    ({"em"}, {13}, {"VV"}, 0.98,1.02)
-    ({"em"}, {13}, {"ZTT"}, 0.98,1.02)
-    ({"em"}, {13}, {bbH}, 0.98,1.01)
+    ({"em"}, {13}, {"TT"}, 0.99,1.01)
+    ({"em"}, {13}, {"VV"}, 0.99,1.01)
+    ({"em"}, {13}, {"ZTT"}, 0.99,1.01)
+    ({"em"}, {13}, {bbH}, 0.99,1.01)
     ({"em"}, {13}, {ggH}, 0.99,1.01)
     ({"em"}, {8}, {"TT"}, 1.03,0.97)
-    ({"em"}, {9}, {"TT"}, 0.98,1.01)
-    ({"em"}, {9}, {"VV"}, 0.98,1.02)
-    ({"em"}, {9}, {"ZLL"}, 0.98,1.01)
+    ({"em"}, {9}, {"TT"}, 0.99,1.01)
+    ({"em"}, {9}, {"VV"}, 0.99,1.01)
+    ({"em"}, {9}, {"ZLL"}, 0.99,1.01)
     ({"em"}, {9}, {"ZTT"}, 0.98,1.02)
-    ({"em"}, {9}, {bbH}, 0.98,1.01)
+    ({"em"}, {9}, {bbH}, 0.99,1.01)
+    ({"em"}, {9}, {ggH}, 0.99,1.01)
     ({"et"}, {10}, {"TTJ"}, 1.02,0.97)
     ({"et"}, {10}, {"TTT"}, 1.03,0.97)
     ({"et"}, {10}, {"VVJ"}, 1.01,0.99)
     ({"et"}, {10}, {bbH}, 1.01,0.99)
-    ({"et"}, {11}, {"TTJ"}, 0.97,1.03)
+    ({"et"}, {11}, {"TTJ"}, 0.99,1.01)
     ({"et"}, {11}, {"TTT"}, 0.99,1.01)
-    ({"et"}, {11}, {"VVJ"}, 0.99,1.02)
+    ({"et"}, {11}, {"VVJ"}, 0.99,1.01)
     ({"et"}, {11}, {"VVT"}, 0.99,1.01)
-    ({"et"}, {11}, {"ZL"}, 0.99,1.07)
-    ({"et"}, {11}, {"ZTT"}, 0.99,1.04)
+    ({"et"}, {11}, {"ZJ"}, 0.99,1.02)
+    ({"et"}, {11}, {"ZL"}, 0.99,1.04)
+    ({"et"}, {11}, {"ZTT"}, 0.99,1.03)
     ({"et"}, {11}, {bbH}, 0.98,1.02)
+    ({"et"}, {11}, {ggH}, 0.99,1.01)
     ({"et"}, {8}, {"TTJ"}, 1.02,0.97)
     ({"et"}, {8}, {"TTT"}, 1.03,0.97)
     ({"et"}, {8}, {"VVJ"}, 1.01,0.99)
-    ({"et"}, {9}, {"TTJ"}, 0.99,1.04)
-    ({"et"}, {9}, {"TTT"}, 0.98,1.02)
-    ({"et"}, {9}, {"VVJ"}, 0.98,1.04)
+    ({"et"}, {9}, {"TTJ"}, 0.99,1.01)
+    ({"et"}, {9}, {"TTT"}, 0.99,1.01)
+    ({"et"}, {9}, {"VVJ"}, 0.97,1.02)
     ({"et"}, {9}, {"VVT"}, 0.99,1.01)
-    ({"et"}, {9}, {"ZL"}, 0.97,1.06)
-    ({"et"}, {9}, {"ZTT"}, 0.99,1.01)
+    ({"et"}, {9}, {"ZL"}, 0.97,1.04)
+    ({"et"}, {9}, {"ZTT"}, 0.99,1.02)
     ({"et"}, {9}, {bbH}, 0.98,1.02)
     ({"et"}, {9}, {ggH}, 0.98,1.01)
     ({"mt"}, {10}, {"TTJ"}, 1.03,0.97)
@@ -300,81 +326,81 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
     ({"mt"}, {10}, {"VVJ"}, 1.01,0.99)
     ({"mt"}, {10}, {"VVT"}, 1.01,0.99)
     ({"mt"}, {10}, {bbH}, 1.01,0.99)
-    ({"mt"}, {11}, {"TTJ"}, 0.98,1.01)
-    ({"mt"}, {11}, {"TTT"}, 0.98,1.02)
-    ({"mt"}, {11}, {"VVJ"}, 0.98,1.01)
-    ({"mt"}, {11}, {"VVT"}, 0.98,1.02)
-    ({"mt"}, {11}, {"ZJ"}, 0.95,1.01)
-    ({"mt"}, {11}, {"ZL"}, 0.96,1.04)
-    ({"mt"}, {11}, {"ZTT"}, 0.97,1.02)
-    ({"mt"}, {11}, {bbH}, 0.98,1.02)
-    ({"mt"}, {11}, {ggH}, 0.99,1.01)
+    ({"mt"}, {11}, {"TTJ"}, 0.99,1.01)
+    ({"mt"}, {11}, {"TTT"}, 0.99,1.01)
+    ({"mt"}, {11}, {"VVJ"}, 0.99,1.01)
+    ({"mt"}, {11}, {"VVT"}, 0.99,1.01)
+    ({"mt"}, {11}, {"ZJ"}, 0.95,1.02)
+    ({"mt"}, {11}, {"ZL"}, 0.97,1.03)
+    ({"mt"}, {11}, {"ZTT"}, 0.98,1.02)
+    ({"mt"}, {11}, {bbH}, 0.99,1.02)
+    ({"mt"}, {11}, {ggH}, 0.98,1.01)
     ({"mt"}, {8}, {"TTJ"}, 1.02,0.98)
     ({"mt"}, {8}, {"TTT"}, 1.03,0.97)
     ({"mt"}, {8}, {"VVJ"}, 1.01,0.99)
     ({"mt"}, {8}, {bbH}, 1.01,0.99)
-    ({"mt"}, {9}, {"TTJ"}, 0.98,1.01)
-    ({"mt"}, {9}, {"TTT"}, 0.99,1.02)
-    ({"mt"}, {9}, {"VVJ"}, 0.98,1.02)
+    ({"mt"}, {9}, {"TTJ"}, 0.99,1.01)
+    ({"mt"}, {9}, {"TTT"}, 0.99,1.01)
+    ({"mt"}, {9}, {"VVJ"}, 0.99,1.02)
     ({"mt"}, {9}, {"VVT"}, 0.99,1.01)
     ({"mt"}, {9}, {"ZJ"}, 0.99,1.01)
-    ({"mt"}, {9}, {"ZL"}, 0.97,1.06)
+    ({"mt"}, {9}, {"ZL"}, 0.98,1.04)
     ({"mt"}, {9}, {"ZTT"}, 0.98,1.02)
     ({"mt"}, {9}, {bbH}, 0.98,1.02)
-    ({"mt"}, {9}, {ggH}, 0.98,1.03)
-    ({"tt"}, {8}, {"TTJ"}, 1.01,0.97)
-    ({"tt"}, {8}, {"TTT"}, 1.05,0.98)
+    ({"mt"}, {9}, {ggH}, 0.98,1.01)
+    ({"tt"}, {8}, {"TTJ"}, 1.02,0.98)
+    ({"tt"}, {8}, {"TTT"}, 1.04,0.98)
     ({"tt"}, {8}, {"VVJ"}, 1.01,0.99)
     ({"tt"}, {8}, {"VVT"}, 1.01,0.99)
     ({"tt"}, {8}, {bbH}, 1.01,0.99)
-    ({"tt"}, {9}, {"TTJ"}, 0.98,1.04)
-    ({"tt"}, {9}, {"TTT"}, 0.97,1.01)
-    ({"tt"}, {9}, {"VVJ"}, 0.98,1.01)
+    ({"tt"}, {9}, {"TTJ"}, 0.99,1.01)
+    ({"tt"}, {9}, {"TTT"}, 0.99,1.01)
+    ({"tt"}, {9}, {"VVJ"}, 0.99,1.02)
     ({"tt"}, {9}, {"VVT"}, 0.98,1.01)
-    ({"tt"}, {9}, {"ZTT"}, 0.99,1.02)
+    ({"tt"}, {9}, {"ZJ"}, 0.99,1.01)
+    ({"tt"}, {9}, {"ZTT"}, 0.98,1.02)
     ({"tt"}, {9}, {bbH}, 0.98,1.02)
-    ({"tt"}, {9}, {ggH}, 0.99,1.02)
+    ({"tt"}, {9}, {ggH}, 0.99,1.01)
     ({"zmm"}, {8}, {"TT"}, 1.03,0.97)
-    ({"zmm"}, {9}, {"TT"}, 0.98,1.02)
+    ({"zmm"}, {9}, {"TT"}, 0.99,1.01)
     ({"zmm"}, {9}, {"VV"}, 0.98,1.02)
-    ({"zmm"}, {9}, {"ZL"}, 0.98,1.02)
-    ({"zmm"}, {9}, {"ZTT"}, 0.98,1.01)
+    ({"zmm"}, {9}, {"ZLL"}, 0.98,1.02)
+    ({"zmm"}, {9}, {"ZTT"}, 0.98,1.02)
   );
 
   cb.cp().AddSyst(cb,
     "CMS_fake_b_$ERA", "lnN", SystMapAsymm<channel,bin_id,process>::init
-    ({"em"}, {11}, {"ZTT"}, 0.97,1.05)
-    ({"em"}, {11}, {ggH}, 0.99,1.01)
+    ({"em"}, {11}, {"ZLL"}, 0.98,1.01)
+    ({"em"}, {11}, {"ZTT"}, 0.97,1.04)
+    ({"em"}, {11}, {ggH}, 0.98,1.02)
     ({"em"}, {12}, {"ZLL"}, 1.01,0.99)
-    ({"em"}, {13}, {"ZTT"}, 0.96,1.01)
-    ({"em"}, {13}, {ggH}, 0.99,1.01)
-    ({"em"}, {9}, {"ZLL"}, 0.97,1.02)
+    ({"em"}, {13}, {"ZTT"}, 0.97,1.02)
+    ({"em"}, {13}, {ggH}, 0.98,1.02)
+    ({"em"}, {9}, {"ZLL"}, 0.98,1.01)
     ({"em"}, {9}, {"ZTT"}, 0.98,1.03)
-    ({"em"}, {9}, {ggH}, 0.99,1.02)
-    ({"et"}, {11}, {"TTJ"}, 0.99,1.01)
-    ({"et"}, {11}, {"VVJ"}, 0.99,1.01)
-    ({"et"}, {11}, {"ZL"}, 0.99,1.04)
-    ({"et"}, {11}, {"ZTT"}, 0.97,1.02)
-    ({"et"}, {9}, {"ZJ"}, 0.99,1.06)
-    ({"et"}, {9}, {"ZL"}, 0.93,1.03)
-    ({"et"}, {9}, {"ZTT"}, 0.99,1.02)
-    ({"et"}, {9}, {ggH}, 0.98,1.03)
-    ({"mt"}, {11}, {"TTJ"}, 0.99,1.01)
-    ({"mt"}, {11}, {"ZJ"}, 0.95,1.04)
-    ({"mt"}, {11}, {"ZL"}, 0.93,1.03)
-    ({"mt"}, {11}, {"ZTT"}, 0.97,1.04)
-    ({"mt"}, {11}, {ggH}, 0.99,1.01)
-    ({"mt"}, {9}, {"VVT"}, 0.99,1.01)
+    ({"em"}, {9}, {ggH}, 0.98,1.02)
+    ({"et"}, {11}, {"ZL"}, 0.97,1.02)
+    ({"et"}, {11}, {"ZTT"}, 0.97,1.03)
+    ({"et"}, {11}, {ggH}, 0.97,1.03)
+    ({"et"}, {9}, {"ZJ"}, 0.98,1.03)
+    ({"et"}, {9}, {"ZL"}, 0.95,1.03)
+    ({"et"}, {9}, {"ZTT"}, 0.98,1.02)
+    ({"et"}, {9}, {ggH}, 0.97,1.03)
+    ({"mt"}, {11}, {"ZJ"}, 0.97,1.02)
+    ({"mt"}, {11}, {"ZL"}, 0.95,1.04)
+    ({"mt"}, {11}, {"ZTT"}, 0.97,1.03)
+    ({"mt"}, {11}, {ggH}, 0.97,1.02)
     ({"mt"}, {9}, {"ZJ"}, 0.99,1.01)
-    ({"mt"}, {9}, {"ZL"}, 0.97,1.01)
-    ({"mt"}, {9}, {"ZTT"}, 0.98,1.03)
+    ({"mt"}, {9}, {"ZL"}, 0.98,1.01)
+    ({"mt"}, {9}, {"ZTT"}, 0.97,1.02)
     ({"mt"}, {9}, {ggH}, 0.97,1.03)
-    ({"tt"}, {9}, {"VVJ"}, 0.99,1.01)
+    ({"tt"}, {9}, {"VVT"}, 0.99,1.01)
     ({"tt"}, {9}, {"ZJ"}, 0.98,1.01)
-    ({"tt"}, {9}, {"ZTT"}, 0.98,1.01)
-    ({"tt"}, {9}, {ggH}, 0.97,1.04)
+    ({"tt"}, {9}, {"ZL"}, 0.99,1.05)
+    ({"tt"}, {9}, {"ZTT"}, 0.97,1.02)
+    ({"tt"}, {9}, {ggH}, 0.97,1.03)
     ({"zmm"}, {9}, {"VV"}, 0.99,1.01)
-    ({"zmm"}, {9}, {"ZL"}, 0.97,1.02)
+    ({"zmm"}, {9}, {"ZLL"}, 0.97,1.02)
     ({"zmm"}, {9}, {"ZTT"}, 0.97,1.03)
   );
 
@@ -382,8 +408,8 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
   // -----------------------
   cb.cp().process(JoinStr({signal, {"ZTT","VVT","TTT"}})).channel({"et","mt","tt"}).AddSyst(cb,
     "CMS_eff_t_$ERA", "lnN", SystMap<channel>::init
-    ({"et", "mt"}, 1.05)
-    ({"tt"},       1.10));
+    ({"et", "mt"}, 1.04)
+    ({"tt"},       1.08));
 
   cb.cp().process(JoinStr({signal, {"ZTT","VVT","TTT"}})).channel({"et","mt","tt"}).AddSyst(cb,
     "CMS_eff_t_$CHANNEL_$ERA", "lnN", SystMap<channel>::init
@@ -393,16 +419,46 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
   cb.cp().process(JoinStr({signal, {"ZTT","VVT","TTT"}})).channel({"et","mt","tt"}).AddSyst(cb,
     "CMS_eff_t_mssmHigh_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
 
+  //  cb.cp().process(JoinStr({signal, {"ZTT","VVT","TTT"}})).channel({"et","mt","tt"}).AddSyst(cb,
+  //    "CMS_scale_t_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
   cb.cp().process(JoinStr({signal, {"ZTT","VVT","TTT"}})).channel({"et","mt","tt"}).AddSyst(cb,
-    "CMS_scale_t_$CHANNEL_$ERA", "shape", SystMap<>::init(1.00));
+    "CMS_scale_t_1prong0pi0_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp().process(JoinStr({signal, {"ZTT","VVT","TTT"}})).channel({"et","mt","tt"}).AddSyst(cb,
+    "CMS_scale_t_1prong1pi0_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp().process(JoinStr({signal, {"ZTT","VVT","TTT"}})).channel({"et","mt","tt"}).AddSyst(cb,
+    "CMS_scale_t_3prong0pi0_$ERA", "shape", SystMap<>::init(1.00));
+
+  cb.cp().process({"ZL"}).channel({"et"}).AddSyst(cb,
+    "CMS_scale_t_efake_1prong0pi0_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp().process({"ZL"}).channel({"et"}).AddSyst(cb,
+    "CMS_scale_t_efake_1prong1pi0_$ERA", "shape", SystMap<>::init(1.00));
 
   //DY reweighting
+  //cb.cp().process(JoinStr({{"ZTT"}})).channel({"et","mt","tt", "em"}).AddSyst(cb,
+  //  "CMS_htt_dyShape_$ERA", "shape", SystMap<>::init(1.00));
+  
   cb.cp().process(JoinStr({{"ZTT"}})).channel({"et","mt","tt", "em"}).AddSyst(cb,
-    "CMS_htt_dyShape_$ERA", "shape", SystMap<>::init(1.00));
+    "CMS_htt_dyShape_scale_m_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp().process(JoinStr({{"ZTT"}})).channel({"et","mt","tt", "em"}).AddSyst(cb,
+    "CMS_htt_dyShape_tjXsec_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp().process(JoinStr({{"ZTT"}})).channel({"et","mt","tt", "em"}).AddSyst(cb,
+    "CMS_htt_dyShape_stat_m400pt0_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp().process(JoinStr({{"ZTT"}})).channel({"et","mt","tt", "em"}).AddSyst(cb,
+    "CMS_htt_dyShape_stat_m400pt40_$ERA", "shape", SystMap<>::init(1.00));
+  cb.cp().process(JoinStr({{"ZTT"}})).channel({"et","mt","tt", "em"}).AddSyst(cb,
+    "CMS_htt_dyShape_stat_m400pt80_$ERA", "shape", SystMap<>::init(1.00));
 
   //W jet->tau FR shape
   cb.cp().process(JoinStr({{"W"}})).channel({"et","mt"}).bin_id({8,9}).AddSyst(cb,
     "CMS_htt_wFakeShape_$ERA","shape",SystMap<>::init(1.00));
+
+  //jet->lepton FR (emu)
+  cb.cp().process(JoinStr({{"W","VV"}})).channel({"em"}).AddSyst(cb,
+   "CMS_htt_$CHANNEL_muFake_$ERA","shape",SystMap<>::init(1.00));
+
+  cb.cp().process(JoinStr({{"W","VV"}})).channel({"em"}).AddSyst(cb,
+   "CMS_htt_$CHANNEL_eFake_$ERA","shape",SystMap<>::init(1.00));
+
 
   // Electron energy scale
   // ---------------------
@@ -417,26 +473,348 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
   // For now we also avoid applying this to any of the high-mT control regions
   // as the exact (anti-)correlation with low mT needs to be established
   // CHECK THIS
-  cb.cp().AddSyst(cb,
+  /*cb.cp().AddSyst(cb,
     "CMS_htt_boson_scale_met_$ERA", "lnN", SystMap<channel, bin_id, process>::init
-    ({"et", "mt", "em", "tt"}, {8, 9, 10, 11, 12, 13, 15, 18, 21, 24, 27, 30}, JoinStr({signal, {"ZTT", "W"}}), 1.02));
-
+    ({"et", "mt", "em", "tt"}, {8, 9, 10, 11, 12, 13, 15, 18, 21, 24, 27, 30}, JoinStr({signal, {"ZTT", "W"}}), 1.02));*/
+  // Scaling of the response
+  // ------
+  // signal region
   cb.cp().AddSyst(cb,
+    "CMS_htt_boson_scale_met_$ERA", "lnN", SystMapAsymm<channel,bin_id,process>::init
+    ({"em"}, {10}, {ggH}, 1.01,0.99)
+    ({"em"}, {11}, {"W"}, 1.01,0.96)
+    ({"em"}, {11}, {"ZTT"}, 0.99,1.01)
+    ({"em"}, {11}, {ggH}, 1.02,0.99)
+    ({"em"}, {12}, {"W"}, 0.98,1.03)
+    ({"em"}, {12}, {"ZTT"}, 0.96,1.04)
+    ({"em"}, {12}, {bbH}, 0.97,1.03)
+    ({"em"}, {12}, {ggH}, 0.96,1.04)
+    ({"em"}, {13}, {"W"}, 0.99,1.07)
+    ({"em"}, {13}, {"ZTT"}, 0.94,1.06)
+    ({"em"}, {13}, {bbH}, 0.95,1.05)
+    ({"em"}, {13}, {ggH}, 0.97,1.04)
+    ({"em"}, {8}, {"ZTT"}, 1.01,0.99)
+    ({"em"}, {8}, {bbH}, 1.01,0.98)
+    ({"em"}, {8}, {ggH}, 1.03,0.97)
+    ({"em"}, {9}, {"W"}, 1.01,0.98)
+    ({"em"}, {9}, {"ZTT"}, 1.02,0.98)
+    ({"em"}, {9}, {bbH}, 1.04,0.96)
+    ({"em"}, {9}, {ggH}, 1.03,0.98)
+    ({"et"}, {10}, {"W"}, 0.97,1.03)
+    ({"et"}, {10}, {"ZTT"}, 1.01,0.99)
+    ({"et"}, {10}, {bbH}, 0.99,1.01)
+    ({"et"}, {10}, {ggH}, 0.99,1.01)
+    ({"et"}, {11}, {"W"}, 0.95,1.03)
+    ({"et"}, {11}, {"ZL"}, 1.02,0.98)
+    ({"et"}, {11}, {"ZTT"}, 1.02,0.97)
+    ({"et"}, {11}, {ggH}, 1.02,0.99)
+    ({"et"}, {8}, {"W"}, 0.95,1.04)
+    ({"et"}, {8}, {"ZL"}, 0.99,1.01)
+    ({"et"}, {8}, {ggH}, 1.01,0.99)
+    ({"et"}, {9}, {"W"}, 0.96,1.05)
+    ({"et"}, {9}, {"ZL"}, 0.99,1.03)
+    ({"et"}, {9}, {"ZTT"}, 0.99,1.01)
+    ({"et"}, {9}, {ggH}, 1.01,0.99)
+    ({"mt"}, {10}, {"W"}, 0.97,1.01)
+    ({"mt"}, {10}, {"ZL"}, 1.01,0.99)
+    ({"mt"}, {10}, {bbH}, 0.99,1.01)
+    ({"mt"}, {10}, {ggH}, 0.99,1.01)
+    ({"mt"}, {11}, {"W"}, 0.97,1.01)
+    ({"mt"}, {11}, {"ZL"}, 1.04,0.99)
+    ({"mt"}, {11}, {"ZTT"}, 1.01,0.99)
+    ({"mt"}, {11}, {bbH}, 0.99,1.01)
+    ({"mt"}, {11}, {ggH}, 0.99,1.01)
+    ({"mt"}, {8}, {"W"}, 0.96,1.04)
+    ({"mt"}, {8}, {"ZL"}, 0.99,1.01)
+    ({"mt"}, {8}, {ggH}, 1.01,0.99)
+    ({"mt"}, {9}, {"W"}, 0.96,1.05)
+    ({"mt"}, {9}, {"ZL"}, 0.96,1.01)
+    ({"mt"}, {9}, {bbH}, 1.01,0.99)
+    ({"mt"}, {9}, {ggH}, 1.01,0.99)
+  );
+  // control region
+  cb.cp().AddSyst(cb,
+    "CMS_htt_boson_scale_met_$ERA", "lnN", SystMapAsymm<channel,bin_id,process>::init
+    ({"et"}, {15}, {"W"}, 0.95,1.04)
+    ({"et"}, {15}, {"ZL"}, 1.01,0.99)
+    ({"et"}, {15}, {"ZTT"}, 0.99,1.01)
+    ({"et"}, {18}, {"W"}, 0.96,1.05)
+    ({"et"}, {21}, {"W"}, 0.97,1.03)
+    ({"et"}, {21}, {"ZL"}, 0.98,1.01)
+    ({"et"}, {21}, {"ZTT"}, 0.98,1.02)
+    ({"et"}, {24}, {"W"}, 0.95,1.03)
+    ({"mt"}, {15}, {"W"}, 0.96,1.04)
+    ({"mt"}, {15}, {"ZL"}, 0.99,1.03)
+    ({"mt"}, {18}, {"W"}, 0.96,1.05)
+    ({"mt"}, {21}, {"W"}, 0.97,1.01)
+    ({"mt"}, {21}, {"ZL"}, 1.01,0.97)
+    ({"mt"}, {21}, {"ZTT"}, 1.01,0.99)
+    ({"mt"}, {24}, {"W"}, 0.97,1.01)
+  );
+ 
+  /*cb.cp().AddSyst(cb,
     "CMS_htt_boson_reso_met_$ERA", "lnN", SystMap<channel, bin_id, process>::init
-    ({"et", "mt", "em", "tt"}, {8, 9, 10, 11, 12, 13, 15, 18, 21, 24,27, 30}, JoinStr({signal, {"ZTT", "W"}}), 1.02));
-
+    ({"et", "mt", "em", "tt"}, {8, 9, 10, 11, 12, 13, 15, 18, 21, 24,27, 30}, JoinStr({signal, {"ZTT", "W"}}), 1.02));*/
+  // Resoulution variation
+  // ------
+  // signal region
   cb.cp().AddSyst(cb,
+    "CMS_htt_boson_reso_met_$ERA", "lnN", SystMapAsymm<channel,bin_id,process>::init
+    ({"em"}, {10}, {"ZTT"}, 1.01,0.99)
+    ({"em"}, {10}, {bbH}, 1.01,0.99)
+    ({"em"}, {10}, {ggH}, 1.01,0.99)
+    ({"em"}, {11}, {"W"}, 0.99,1.01)
+    ({"em"}, {11}, {"ZTT"}, 1.01,0.98)
+    ({"em"}, {11}, {bbH}, 1.02,0.99)
+    ({"em"}, {11}, {ggH}, 1.01,0.99)
+    ({"em"}, {12}, {"W"}, 0.98,1.01)
+    ({"em"}, {12}, {"ZTT"}, 0.95,1.05)
+    ({"em"}, {12}, {bbH}, 0.97,1.03)
+    ({"em"}, {12}, {ggH}, 0.99,1.01)
+    ({"em"}, {13}, {"ZTT"}, 0.98,1.03)
+    ({"em"}, {13}, {bbH}, 0.99,1.01)
+    ({"em"}, {13}, {ggH}, 0.99,1.01)
+    ({"em"}, {8}, {bbH}, 0.99,1.01)
+    ({"em"}, {8}, {ggH}, 0.99,1.01)
+    ({"em"}, {9}, {"W"}, 1.01,0.99)
+    ({"em"}, {9}, {bbH}, 0.99,1.01)
+    ({"em"}, {9}, {ggH}, 0.99,1.01)
+    ({"et"}, {10}, {"W"}, 1.03,0.98)
+    ({"et"}, {10}, {"ZTT"}, 0.98,1.02)
+    ({"et"}, {10}, {bbH}, 0.98,1.02)
+    ({"et"}, {10}, {ggH}, 0.99,1.01)
+    ({"et"}, {11}, {"W"}, 1.01,0.96)
+    ({"et"}, {11}, {"ZL"}, 0.96,1.01)
+    ({"et"}, {11}, {"ZTT"}, 0.97,1.01)
+    ({"et"}, {11}, {bbH}, 0.99,1.02)
+    ({"et"}, {11}, {ggH}, 0.99,1.02)
+    ({"et"}, {8}, {"W"}, 1.01,0.99)
+    ({"et"}, {8}, {"ZL"}, 1.01,0.99)
+    ({"et"}, {8}, {"ZTT"}, 1.01,0.99)
+    ({"et"}, {8}, {bbH}, 1.01,0.99)
+    ({"et"}, {8}, {ggH}, 1.01,0.99)
+    ({"et"}, {9}, {"W"}, 1.04,0.99)
+    ({"et"}, {9}, {"ZL"}, 1.05,0.98)
+    ({"et"}, {9}, {"ZTT"}, 1.01,0.99)
+    ({"et"}, {9}, {bbH}, 1.01,0.99)
+    ({"et"}, {9}, {ggH}, 1.01,0.99)
+    ({"mt"}, {10}, {"W"}, 1.02,0.97)
+    ({"mt"}, {10}, {"ZTT"}, 0.98,1.02)
+    ({"mt"}, {10}, {bbH}, 0.98,1.02)
+    ({"mt"}, {10}, {ggH}, 0.99,1.01)
+    ({"mt"}, {11}, {"W"}, 1.01,0.97)
+    ({"mt"}, {11}, {"ZL"}, 1.02,0.97)
+    ({"mt"}, {11}, {"ZTT"}, 0.98,1.01)
+    ({"mt"}, {11}, {bbH}, 0.99,1.01)
+    ({"mt"}, {11}, {ggH}, 0.99,1.01)
+    ({"mt"}, {8}, {"W"}, 1.01,0.99)
+    ({"mt"}, {8}, {"ZL"}, 1.01,0.99)
+    ({"mt"}, {8}, {"ZTT"}, 1.01,0.99)
+    ({"mt"}, {8}, {bbH}, 1.01,0.99)
+    ({"mt"}, {8}, {ggH}, 1.01,0.99)
+    ({"mt"}, {9}, {"W"}, 1.02,0.99)
+    ({"mt"}, {9}, {"ZL"}, 1.01,0.99)
+    ({"mt"}, {9}, {"ZTT"}, 1.01,0.99)
+    ({"mt"}, {9}, {bbH}, 1.01,0.99)
+    ({"mt"}, {9}, {ggH}, 1.01,0.99)
+  );
+  // control region
+  cb.cp().AddSyst(cb,
+    "CMS_htt_boson_reso_met_$ERA", "lnN", SystMapAsymm<channel,bin_id,process>::init
+    ({"et"}, {15}, {"W"}, 1.01,0.99)
+    ({"et"}, {15}, {"ZL"}, 1.03,0.99)
+    ({"et"}, {15}, {"ZTT"}, 1.01,0.99)
+    ({"et"}, {18}, {"W"}, 1.04,0.99)
+    ({"et"}, {21}, {"W"}, 1.03,0.98)
+    ({"et"}, {21}, {"ZL"}, 1.02,0.98)
+    ({"et"}, {21}, {"ZTT"}, 0.95,1.01)
+    ({"et"}, {24}, {"W"}, 1.01,0.96)
+    ({"mt"}, {15}, {"W"}, 1.01,0.99)
+    ({"mt"}, {15}, {"ZL"}, 1.01,0.99)
+    ({"mt"}, {15}, {"ZTT"}, 1.01,0.99)
+    ({"mt"}, {18}, {"W"}, 1.02,0.99)
+    ({"mt"}, {21}, {"W"}, 1.02,0.97)
+    ({"mt"}, {21}, {"ZL"}, 0.99,1.01)
+    ({"mt"}, {21}, {"ZTT"}, 0.99,1.02)
+    ({"mt"}, {24}, {"W"}, 1.01,0.97)
+  );
+
+  /*cb.cp().AddSyst(cb,
     "CMS_htt_ewkTop_scale_met_$ERA", "lnN", SystMap<channel, bin_id, process>::init
-    ({"et", "mt", "em", "tt"}, {8, 9, 10, 11, 12, 13, 15, 18, 21, 24, 27, 30}, {"TTT","TTJ","TT","VV", "VVT","VVJ"}, 1.02));
+    ({"et", "mt", "em", "tt"}, {8, 9, 10, 11, 12, 13, 15, 18, 21, 24, 27, 30}, {"TTT","TTJ","TT","VV", "VVT","VVJ"}, 1.02));*/
 
-  cb.cp().AddSyst(cb,
+  /*cb.cp().AddSyst(cb,
     "CMS_htt_ewkTop_reso_met_$ERA", "lnN", SystMap<channel, bin_id, process>::init
-    ({"et", "mt", "em", "tt"}, {8, 9, 10, 11, 12, 13, 15, 18, 21, 24, 27, 30}, {"TTT","TTJ","TT","VV", "VVT","VVJ"}, 1.02));
+    ({"et", "mt", "em", "tt"}, {8, 9, 10, 11, 12, 13, 15, 18, 21, 24, 27, 30}, {"TTT","TTJ","TT","VV", "VVT","VVJ"}, 1.02));*/
+
+
+  // Met uncertainties recommended by JetMet POG
+  // -----------------
+  // For samples without recoil corrections (TT,TTJ,TTT,VV,VVJ,VVT)
+  // the variations of the jet energy and the unclustered energy are
+  // used to derive shape uncertainties. These are transformed into lnN uncertainties listed below.
+
+  // Jet energy variation
+  // ------
+  // signal region
+  cb.cp().AddSyst(cb,
+    "CMS_jet_energy_met_unc_$ERA", "lnN", SystMapAsymm<channel,bin_id,process>::init
+    ({"em"}, {10}, {"TT"}, 0.99,1.01)
+    ({"em"}, {10}, {"VV"}, 0.99,1.01)
+    ({"em"}, {11}, {"TT"}, 0.99,1.01)
+    ({"em"}, {11}, {"VV"}, 0.99,1.01)
+    ({"em"}, {12}, {"TT"}, 0.96,1.04)
+    ({"em"}, {12}, {"VV"}, 0.96,1.04)
+    ({"em"}, {13}, {"TT"}, 0.97,1.03)
+    ({"em"}, {13}, {"VV"}, 0.97,1.03)
+    ({"et"}, {10}, {"TTJ"}, 1.01,0.98)
+    ({"et"}, {10}, {"TTT"}, 1.01,0.99)
+    ({"et"}, {10}, {"VVJ"}, 1.04,0.98)
+    ({"et"}, {10}, {"VVT"}, 1.01,0.99)
+    ({"et"}, {11}, {"TTJ"}, 1.01,0.99)
+    ({"et"}, {11}, {"TTT"}, 1.01,0.99)
+    ({"et"}, {11}, {"VVT"}, 1.01,0.99)
+    ({"et"}, {8}, {"TTJ"}, 0.99,1.02)
+    ({"et"}, {8}, {"TTT"}, 0.99,1.01)
+    ({"et"}, {8}, {"VVJ"}, 0.97,1.02)
+    ({"et"}, {8}, {"VVT"}, 0.99,1.02)
+    ({"et"}, {9}, {"TTJ"}, 0.99,1.01)
+    ({"et"}, {9}, {"TTT"}, 0.99,1.01)
+    ({"et"}, {9}, {"VVT"}, 0.99,1.01)
+    ({"mt"}, {10}, {"TTJ"}, 1.01,0.99)
+    ({"mt"}, {10}, {"VVJ"}, 1.01,0.99)
+    ({"mt"}, {11}, {"TTT"}, 1.01,0.99)
+    ({"mt"}, {11}, {"VVJ"}, 1.01,0.98)
+    ({"mt"}, {11}, {"VVT"}, 1.01,0.99)
+    ({"mt"}, {8}, {"TTJ"}, 0.99,1.01)
+    ({"mt"}, {8}, {"TTT"}, 0.99,1.01)
+    ({"mt"}, {8}, {"VVJ"}, 0.98,1.01)
+    ({"mt"}, {8}, {"VVT"}, 0.99,1.01)
+    ({"mt"}, {9}, {"TTJ"}, 0.99,1.01)
+    ({"mt"}, {9}, {"TTT"}, 0.99,1.01)
+    ({"mt"}, {9}, {"VVJ"}, 0.97,1.03)
+    ({"mt"}, {9}, {"VVT"}, 0.99,1.01)
+  );
+  // control region
+  cb.cp().AddSyst(cb,
+    "CMS_jet_energy_met_unc_$ERA", "lnN", SystMapAsymm<channel,bin_id,process>::init
+    ({"et"}, {15}, {"TTJ"}, 0.99,1.01)
+    ({"et"}, {15}, {"VVJ"}, 0.99,1.01)
+    ({"et"}, {15}, {"VVT"}, 0.98,1.01)
+    ({"et"}, {18}, {"TTJ"}, 0.99,1.01)
+    ({"et"}, {18}, {"TTT"}, 1.05,0.95)
+    ({"et"}, {18}, {"VVJ"}, 1.01,0.99)
+    ({"et"}, {18}, {"VVT"}, 1.02,0.98)
+    ({"et"}, {21}, {"TTJ"}, 0.99,1.01)
+    ({"et"}, {21}, {"TTT"}, 0.99,1.05)
+    ({"et"}, {21}, {"VVJ"}, 0.99,1.01)
+    ({"et"}, {21}, {"VVT"}, 0.99,1.01)
+    ({"et"}, {24}, {"TTJ"}, 1.01,0.99)
+    ({"et"}, {24}, {"TTT"}, 1.05,0.95)
+    ({"et"}, {24}, {"VVJ"}, 1.02,0.98)
+    ({"et"}, {24}, {"VVT"}, 0.98,1.02)
+    ({"mt"}, {15}, {"TTJ"}, 0.98,1.01)
+    ({"mt"}, {15}, {"TTT"}, 0.99,1.05)
+    ({"mt"}, {15}, {"VVT"}, 0.99,1.01)
+    ({"mt"}, {18}, {"TTT"}, 1.01,0.99)
+    ({"mt"}, {18}, {"VVJ"}, 0.99,1.04)
+    ({"mt"}, {18}, {"VVT"}, 0.95,1.05)
+    ({"mt"}, {21}, {"TTJ"}, 1.01,0.99)
+    ({"mt"}, {21}, {"TTT"}, 1.05,0.95)
+    ({"mt"}, {21}, {"VVT"}, 0.99,1.01)
+    ({"mt"}, {24}, {"TTT"}, 0.93,1.01)
+    ({"mt"}, {24}, {"VVJ"}, 1.01,0.96)
+    ({"mt"}, {24}, {"VVT"}, 1.01,0.96)
+  );
+  // Unclustered energy variation
+  // ------
+  // signal region
+  cb.cp().AddSyst(cb,
+    "CMS_unclustered_energy_met_unc_$ERA", "lnN", SystMapAsymm<channel,bin_id,process>::init
+    ({"em"}, {10}, {"VV"}, 0.99,1.01)
+    ({"em"}, {12}, {"TT"}, 0.99,1.01)
+    ({"em"}, {12}, {"VV"}, 0.99,1.03)
+    ({"em"}, {13}, {"TT"}, 0.99,1.01)
+    ({"em"}, {13}, {"VV"}, 0.99,1.01)
+    ({"em"}, {8}, {"VV"}, 1.01,0.99)
+    ({"em"}, {9}, {"VV"}, 0.99,1.01)
+    ({"et"}, {10}, {"TTJ"}, 0.98,1.02)
+    ({"et"}, {10}, {"TTT"}, 1.01,0.99)
+    ({"et"}, {10}, {"VVJ"}, 0.97,1.03)
+    ({"et"}, {10}, {"VVT"}, 1.01,0.99)
+    ({"et"}, {11}, {"TTJ"}, 1.01,0.99)
+    ({"et"}, {11}, {"TTT"}, 1.01,0.99)
+    ({"et"}, {11}, {"VVJ"}, 1.01,0.99)
+    ({"et"}, {11}, {"VVT"}, 1.01,0.99)
+    ({"et"}, {8}, {"TTJ"}, 0.98,1.02)
+    ({"et"}, {8}, {"VVJ"}, 0.99,1.05)
+    ({"et"}, {9}, {"TTJ"}, 0.98,1.01)
+    ({"et"}, {9}, {"VVJ"}, 0.99,1.01)
+    ({"et"}, {9}, {"VVT"}, 1.01,0.99)
+    ({"mt"}, {10}, {"TTJ"}, 1.01,0.97)
+    ({"mt"}, {10}, {"TTT"}, 1.01,0.98)
+    ({"mt"}, {10}, {"VVJ"}, 1.05,0.99)
+    ({"mt"}, {10}, {"VVT"}, 1.01,0.99)
+    ({"mt"}, {11}, {"TTJ"}, 1.01,0.99)
+    ({"mt"}, {11}, {"TTT"}, 1.01,0.99)
+    ({"mt"}, {11}, {"VVJ"}, 1.01,0.97)
+    ({"mt"}, {11}, {"VVT"}, 1.01,0.99)
+    ({"mt"}, {8}, {"TTJ"}, 0.99,1.01)
+    ({"mt"}, {8}, {"VVJ"}, 0.97,1.01)
+    ({"mt"}, {8}, {"VVT"}, 1.01,0.99)
+    ({"mt"}, {9}, {"VVJ"}, 0.99,1.01)
+    ({"mt"}, {9}, {"VVT"}, 0.99,1.01)
+  );
+  // control region
+  cb.cp().AddSyst(cb,
+    "CMS_unclustered_energy_met_unc_$ERA", "lnN", SystMapAsymm<channel,bin_id,process>::init
+    ({"et"}, {15}, {"TTJ"}, 0.98,1.01)
+    ({"et"}, {15}, {"TTT"}, 1.02,0.98)
+    ({"et"}, {15}, {"VVJ"}, 1.02,0.98)
+    ({"et"}, {15}, {"VVT"}, 0.98,1.01)
+    ({"et"}, {18}, {"TTJ"}, 1.02,0.99)
+    ({"et"}, {18}, {"TTT"}, 0.98,1.02)
+    ({"et"}, {18}, {"VVJ"}, 0.96,1.08)
+    ({"et"}, {18}, {"VVT"}, 1.01,0.99)
+    ({"et"}, {21}, {"TTJ"}, 1.02,0.93)
+    ({"et"}, {21}, {"TTT"}, 0.98,1.02)
+    ({"et"}, {21}, {"VVJ"}, 0.97,1.01)
+    ({"et"}, {21}, {"VVT"}, 1.06,0.95)
+    ({"et"}, {24}, {"TTJ"}, 0.99,1.01)
+    ({"et"}, {24}, {"TTT"}, 1.02,0.98)
+    ({"et"}, {24}, {"VVJ"}, 1.01,0.94)
+    ({"et"}, {24}, {"VVT"}, 1.04,0.96)
+    ({"mt"}, {15}, {"TTJ"}, 1.01,0.99)
+    ({"mt"}, {15}, {"TTT"}, 0.98,1.02)
+    ({"mt"}, {15}, {"VVJ"}, 0.99,1.01)
+    ({"mt"}, {15}, {"VVT"}, 1.01,0.99)
+    ({"mt"}, {18}, {"TTJ"}, 0.99,1.02)
+    ({"mt"}, {18}, {"TTT"}, 1.04,0.96)
+    ({"mt"}, {18}, {"VVJ"}, 1.03,0.97)
+    ({"mt"}, {18}, {"VVT"}, 1.02,0.98)
+    ({"mt"}, {21}, {"TTJ"}, 1.01,0.99)
+    ({"mt"}, {21}, {"TTT"}, 1.05,0.95)
+    ({"mt"}, {21}, {"VVJ"}, 1.01,0.98)
+    ({"mt"}, {21}, {"VVT"}, 1.02,0.99)
+    ({"mt"}, {24}, {"TTJ"}, 1.02,0.99)
+    ({"mt"}, {24}, {"TTT"}, 1.02,0.98)
+    ({"mt"}, {24}, {"VVJ"}, 0.98,1.02)
+    ({"mt"}, {24}, {"VVT"}, 0.98,1.02)
+  );
 
   // top-quark pT reweighting
   // ------------------------
-  cb.cp().channel({"zmm"},false).process({"TTT","TTJ","TT"}).AddSyst(cb,
-    "CMS_htt_ttbarShape_$ERA", "shape", SystMap<>::init(1.00));
+  if(ttbar_fit){
+    cb.cp().channel({"ttbar"}).process({"TTT","TTJ","TT"}).AddSyst(cb,
+      "CMS_htt_ttbarShape_$ERA", "shapeU", SystMap<>::init(1.00));
+
+    cb_sig.cp().channel({"et","mt","tt","em"}).process({"TTT","TTJ","TT"}).AddSyst(cb,
+      "CMS_htt_ttbarShape_$ERA", "shapeU", SystMap<>::init(1.00));
+
+  } else {
+    cb.cp().channel({"zmm"},false).process({"TTT","TTJ","TT"}).AddSyst(cb,
+      "CMS_htt_ttbarShape_$ERA", "shape", SystMap<>::init(1.00));
+ }
 
   // Cross-sections and lumi
   // -----------------------
@@ -444,7 +822,7 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
     "lumi_13TeV", "lnN", SystMap<>::init(1.025));
 
   //Add luminosity uncertainty for W in em, tt and the zmm region as norm is from MC
-  cb.cp().process({"W"}).channel({"tt","em","zmm"}).AddSyst(cb,
+  cb.cp().process({"W"}).channel({"tt","em","zmm","ttbar"}).AddSyst(cb,
     "lumi_13TeV", "lnN", SystMap<>::init(1.025));
 
   if(zmm_fit)
@@ -461,7 +839,7 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
     cb.FilterSysts([](ch::Systematic *syst) {
       return syst->name() == "lumi_13TeV" &&
         (
-          (syst->channel() == "zmm" && syst->process() == "ZL") ||
+          (syst->channel() == "zmm" && syst->process() == "ZLL") ||
           (syst->channel() != "zmm" && syst->process() == "ZTT" &&
             (syst->bin_id() == 8 || syst->bin_id() == 9 || syst->bin_id() == 10 || syst->bin_id()==11||syst->bin_id()==12||syst->bin_id()==13))
         );
@@ -472,13 +850,31 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
     cb.cp().process({"ZTT", "ZL", "ZJ", "ZLL", "ZJ_rest"}).AddSyst(cb,
         "CMS_htt_zjXsec_13TeV", "lnN", SystMap<>::init(1.04));
   }
+
+ if(ttbar_fit){
+   //Add ttbar cross section uncertainty only to TTJ contribution and TTT in the control regions. Remove
+   //lumi uncert from the data-scaled part
+   cb.cp().process({"TTJ"}).AddSyst(cb,
+     "CMS_htt_tjXsec_13TeV","lnN", SystMap<>::init(1.06));
+   cb.cp().process({"TTT"}).bin_id({14,15,16,17,18,19,21,24,26,27,28,29,30,31}).AddSyst(cb,
+     "CMS_htt_tjXsec_13TeV","lnN", SystMap<>::init(1.06));
+    cb.FilterSysts([](ch::Systematic *syst) {
+      return syst->name() == "lumi_13TeV" &&
+        (
+          (syst->process() == "TT") ||
+          (syst->process() == "TTT" &&
+            (syst->bin_id() == 8 || syst->bin_id() == 9 || syst->bin_id() == 10 || syst->bin_id()==11||syst->bin_id()==12||syst->bin_id()==13))
+        );
+    });
+ } else {
+   cb.cp().process({"TTT","TTJ","TT"}).AddSyst(cb,
+     "CMS_htt_tjXsec_13TeV","lnN", SystMap<>::init(1.06));
+ }
+  
   // Diboson and ttbar Normalisation - fully correlated
   cb.cp().process({"VV","VVT","VVJ","VVJ_rest"}).AddSyst(cb,
     "CMS_htt_vvXsec_13TeV", "lnN", SystMap<>::init(1.05));
 
-  cb.cp().process({"TT","TTJ","TTT","TTJ_rest"}).AddSyst(cb,
-    "CMS_htt_tjXsec_13TeV", "lnN", SystMap<>::init(1.06));
-  
   // W norm, just for em, tt and the zmm region where MC norm is from MC
   cb.cp().process({"W","W_rest"}).channel({"tt","em","zmm"}).AddSyst(cb,
     "CMS_htt_wjXsec_13TeV", "lnN", SystMap<>::init(1.04));
@@ -489,41 +885,56 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
   // https://indico.cern.ch/event/628825/contributions/2561717/attachments/1446912/2242418/zmumu_ztautau_extrapolation.pdf
   // Only apply this to signal-region
   // categories for now, using cb_sig instead of cb
-  // In case we use the zmm region in the fit this uncertainty is currently a placeholder for the uncertainty on the Z->mumu/Z->tautau uncertainty
-  // Numbers will be updated again as soon as the final categorisation is frozen
-  // THIS IS TO BE CHECKED
   cb_sig.cp().channel({"mt","et","em","tt"}).process({"ZTT"}).AddSyst(cb,
   "CMS_htt_zttAccept_$BIN_13TeV", "lnN", SystMap<bin_id,channel>::init
   ({8},{"tt"}, 1.07)
-  ({9},{"tt"}, 1.04)
+  ({9},{"tt"}, 1.05)
   ({8},{"mt"}, 1.01)
   ({9},{"mt"}, 1.02)
   ({10},{"mt"}, 1.02)
-  ({11},{"mt"}, 1.01)
-  ({12},{"mt"}, 1.01)
-  ({13},{"mt"}, 1.01)
+  ({11},{"mt"}, 1.02)
   ({8},{"et"}, 1.02)
-  ({9},{"et"}, 1.01)
+  ({9},{"et"}, 1.02)
   ({10},{"et"}, 1.02)
   ({11},{"et"}, 1.02)
-  ({12},{"et"}, 1.02)
-  ({13},{"et"}, 1.01)
   ({8},{"em"}, 1.01)
   ({9},{"em"}, 1.01)
   ({10},{"em"}, 1.01)
   ({11},{"em"}, 1.01)
-  ({12},{"em"}, 1.01)
-  ({13},{"em"}, 1.01));
+  ({12},{"em"}, 1.05)
+  ({13},{"em"}, 1.04));
 
-  // Should also add something for ttbar
+  // Should also add something for ttbar - based on scale uncert studies from Alexei/Artur
+  cb_sig.cp().channel({"mt","et","em","tt"}).process({"TTT","TT"}).AddSyst(cb,
+  "CMS_htt_ttbarAccept_$BIN_13TeV","lnN", SystMap<bin_id,channel>::init
+  ({8},{"tt"}, 1.01)
+  ({9},{"tt"}, 1.004)
+  ({8},{"mt"}, 1.003)
+  ({9},{"mt"}, 1.003)
+  ({10},{"mt"}, 1.004)
+  ({11},{"mt"}, 1.002)
+  ({8},{"et"}, 1.003)
+  ({9},{"et"}, 1.003)
+  ({10},{"et"}, 1.002)
+  ({11},{"et"}, 1.002)
+  ({8},{"em"}, 1.002)
+  ({9},{"em"}, 1.002)
+  ({10},{"em"}, 1.004)
+  ({11},{"em"}, 1.002)
+  ({12},{"em"}, 1.02)
+  ({13},{"em"}, 1.02));
+
+  //Also add uncert due to definition of ttbar control region
+  cb_sig.cp().channel({"ttbar"}).process({"TT"}).AddSyst(cb,
+  "CMS_htt_ttbarControlVar_13TeV","lnN",SystMap<>::init(1.01));
 
   // Fake-rates
   // ----------
   cb.cp().process({"ZL"}).channel({"et"}).AddSyst(cb,
-    "CMS_htt_eFakeTau_tight_13TeV", "lnN", SystMap<>::init(1.30));
+    "CMS_htt_eFakeTau_tight_13TeV", "lnN", SystMap<>::init(1.11)); //Uncertainty is 9% in barrel and 16% in endcaps, weighted average gives 11
 
   cb.cp().process({"ZL"}).channel({"tt"}).AddSyst(cb,
-    "CMS_htt_eFakeTau_loose_13TeV", "lnN", SystMap<>::init(1.10));
+    "CMS_htt_eFakeTau_loose_13TeV", "lnN", SystMap<>::init(1.03)); //Uncertainty is 3% both in barrel and endcaps
 
   cb.cp().channel({"et", "mt", "tt"}).AddSyst(cb,
     "CMS_htt_jetFakeTau_$CHANNEL_13TeV", "lnN", SystMap<bin_id,process>::init
@@ -533,21 +944,51 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
   cb.cp().process({"W","W_rest"}).channel({"tt"}).AddSyst(cb,
     "CMS_htt_jetFakeTau_$CHANNEL_13TeV", "lnN", SystMap<>::init(1.20));
 
+  //Uncertainty ranges from 11, 19,4, 31, 25% depending on eta bin
   cb.cp().process({"ZL"}).channel({"mt"}).AddSyst(cb,
-    "CMS_htt_mFakeTau_tight_13TeV", "lnN", SystMap<>::init(1.30)); //Uncertainty ranges from 7-35% depending on eta bin
+    "CMS_htt_mFakeTau_tight_13TeV", "lnN", SystMap<>::init(1.12)); //Uncertainty ranges from 4-31% depending on eta bin, this is the weighted average
+
 
   cb.cp().process({"ZL"}).channel({"tt"}).AddSyst(cb,
-    "CMS_htt_mFakeTau_loose_13TeV", "lnN", SystMap<>::init(1.20)); //Uncertainty ranges from 5-23% depending on eta bin
+    "CMS_htt_mFakeTau_loose_13TeV", "lnN", SystMap<>::init(1.05)); //Uncertainty ranges from 3-12% depending on eta bin, this is a rough weighted average
 
 
 
   // QCD extrap.
   // -----------
-  // emu QCD extrapolation 
+  // emu QCD extrapolation  - inclusive -> differential
+  //  nobtag low Dzeta    : 1.026 +/- 0.039
+  //  nobtag medium Dzeta : 1.021 +/- 0.033
+  //  nobtag high Dzeta   : 1.137 +/- 0.060
+  //
+  //  newly defined btag categories (nbtag>=1)
+  //  btag low Dzeta      : 0.588 +/- 0.060
+  //  btag medium Dzeta   : 0.600 +/- 0.051
+  //  btag high Dzeta     : 0.686 +/- 0.197
+  //
+  //  The uncertainties in extrapolation factors should be uncorrelated across categories.
+  //  The uncertainty in extrapolation factor from anti-isolated region to isolated region
+  //  is determined with simulated sample of QCD events (mu-enriched sample) and found
+  //  to be 30%. This uncertainty should be correlated between different event categories.
+  
   cb.cp().process({"QCD"}).channel({"em"}).AddSyst(cb,
-    "CMS_htt_QCD_OS_SS_syst_$BIN", "lnN", SystMap<bin_id>::init
-    ({8}, 1.23)
-    ({9}, 1.34));
+    "CMS_htt_QCD_OS_SS_incl_extrap_syst_$BIN", "lnN", SystMap<bin_id>::init
+    ({8}, 1.04)
+    ({9}, 1.1)
+    ({10}, 1.03)
+    ({11}, 1.09)
+    ({12}, 1.05)
+    ({13}, 1.29));
+
+  // emu QCD extrapolation - anti-isolated to isolated
+  //  The uncertainty in extrapolation factor from anti-isolated region to isolated region
+  //  is determined with simulated sample of QCD events (mu-enriched sample) and found
+  //  to be 30%. This uncertainty should be correlated between different event categories.
+
+  cb.cp().process({"QCD"}).channel({"em"}).AddSyst(cb,
+    "CMS_htt_QCD_OS_SS_iso_extrap_syst", "lnN", SystMap<bin_id>::init
+    ({8,9,10,11,12,13}, 1.3));
+
 
  //tt QCD extrapolation: 
  //No b-tag: 2% stat uncertainty + 12% systematic uncertainty (from difference between OS/SS extrapolation factors from tau1 loose-not tight and tau2 medium-not tight
@@ -577,51 +1018,49 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
   cb.cp().process({"jetFakes"}).channel({"mt","et"}).AddSyst(cb, "norm_ff_w_dm1_njet0_$CHANNEL_stat", "shape", SystMap<>::init(1.00));
   cb.cp().process({"jetFakes"}).channel({"mt","et"}).AddSyst(cb, "norm_ff_w_dm1_njet1_$CHANNEL_stat", "shape", SystMap<>::init(1.00));
 
+  //The following uncerts should be uncorrelated between channels -> renamed at the end of MorphingMSSMFull2016
   cb.cp().process({"jetFakes"}).channel({"mt","et"}).AddSyst(cb, "norm_ff_tt_dm0_njet0_stat", "shape", SystMap<>::init(1.00));
-  cb.cp().process({"jetFakes"}).channel({"mt","et"}).AddSyst(cb, "norm_ff_tt_dm0_njet1_stat", "shape", SystMap<>::init(1.00));
+  //cb.cp().process({"jetFakes"}).channel({"mt","et"}).AddSyst(cb, "norm_ff_tt_dm0_njet1_stat", "shape", SystMap<>::init(1.00)); //No more njet binning in this CR
   cb.cp().process({"jetFakes"}).channel({"mt","et"}).AddSyst(cb, "norm_ff_tt_dm1_njet0_stat", "shape", SystMap<>::init(1.00));
-  cb.cp().process({"jetFakes"}).channel({"mt","et"}).AddSyst(cb, "norm_ff_tt_dm1_njet1_stat", "shape", SystMap<>::init(1.00));
+  //cb.cp().process({"jetFakes"}).channel({"mt","et"}).AddSyst(cb, "norm_ff_tt_dm1_njet1_stat", "shape", SystMap<>::init(1.00)); //No more njet binning in this CR
 
   cb.cp().process({"jetFakes"}).channel({"mt","et","tt"}).AddSyst(cb, "norm_ff_qcd_$CHANNEL_syst", "shape", SystMap<>::init(1.00));
   cb.cp().process({"jetFakes"}).channel({"mt","et"}).AddSyst(cb, "norm_ff_w_syst", "shape", SystMap<>::init(1.00));
   cb.cp().process({"jetFakes"}).channel({"mt","et"}).AddSyst(cb, "norm_ff_tt_syst", "shape", SystMap<>::init(1.00));
   cb.cp().process({"jetFakes"}).channel({"tt"}).AddSyst(cb, "norm_ff_w_$CHANNEL_syst", "shape", SystMap<>::init(1.00));
   cb.cp().process({"jetFakes"}).channel({"tt"}).AddSyst(cb, "norm_ff_tt_$CHANNEL_syst", "shape", SystMap<>::init(1.00));
+  
+  cb.cp().process({"jetFakes"}).channel({"tt"}).AddSyst(cb,"norm_ff_dy_frac_$CHANNEL_syst", "shape", SystMap<>::init(1.00));
+  cb.cp().process({"jetFakes"}).channel({"tt"}).AddSyst(cb,"norm_ff_w_frac_$CHANNEL_syst", "shape", SystMap<>::init(1.00));
+  cb.cp().process({"jetFakes"}).channel({"tt"}).AddSyst(cb,"norm_ff_tt_frac_$CHANNEL_syst", "shape", SystMap<>::init(1.00));
+
 
   //stat norm uncertainties
   cb.cp().process({"jetFakes"}).channel({"mt","et","tt"}).AddSyst(cb, "ff_norm_stat_$CHANNEL_$BIN", "lnN", SystMap<channel, bin_id>::init
-                                                                  ({"mt"}, {8}, 1.035)
-                                                                  ({"mt"}, {9}, 1.036)
-                                                                  ({"mt"}, {10}, 1.024)
-                                                                  ({"mt"}, {11}, 1.032)
-                                                                  ({"mt"}, {12}, 1.039)
-                                                                  ({"mt"}, {13}, 1.044)
-                                                                  ({"et"}, {8}, 1.04)
-                                                                  ({"et"}, {9}, 1.05)
-                                                                  ({"et"}, {10}, 1.065)
-                                                                  ({"et"}, {11}, 1.065)
-                                                                  ({"et"}, {12}, 1.065)
-                                                                  ({"et"}, {13}, 1.065)
-                                                                  ({"tt"}, {8}, 1.03)
-                                                                  ({"tt"}, {9}, 1.04)
+								  ({"mt"}, {8}, 1.039)
+								  ({"mt"}, {9}, 1.040)
+								  ({"mt"}, {10}, 1.038)
+								  ({"mt"}, {11}, 1.035)
+								  ({"et"}, {8}, 1.058)
+								  ({"et"}, {9}, 1.071)
+								  ({"et"}, {10}, 1.044)
+								  ({"et"}, {11}, 1.059)
+								  ({"tt"}, {8}, 1.023)
+								  ({"tt"}, {9}, 1.028)
                                                                   );
 
   //syst norm uncertainties: bin-correlated
   cb.cp().process({"jetFakes"}).channel({"mt","et","tt"}).AddSyst(cb, "ff_norm_syst_$CHANNEL", "lnN", SystMap<channel, bin_id>::init
-                                                                  ({"mt"}, {8}, 1.075)
-                                                                  ({"mt"}, {9}, 1.069)
-                                                                  ({"mt"}, {10}, 1.053)
-                                                                  ({"mt"}, {11}, 1.057)
-                                                                  ({"mt"}, {12}, 1.065)
-                                                                  ({"mt"}, {13}, 1.066)
-                                                                  ({"et"}, {8}, 1.073)
-                                                                  ({"et"}, {9}, 1.067)
-                                                                  ({"et"}, {10}, 1.083)
-                                                                  ({"et"}, {11}, 1.083)
-                                                                  ({"et"}, {12}, 1.083)
-                                                                  ({"et"}, {13}, 1.083)
-                                                                  ({"tt"}, {8}, 1.026)
-                                                                  ({"tt"}, {9}, 1.032)
+								  ({"mt"}, {8}, 1.075)
+								  ({"mt"}, {9}, 1.068)
+								  ({"mt"}, {10}, 1.063)
+								  ({"mt"}, {11}, 1.055)
+								  ({"et"}, {8}, 1.097)
+								  ({"et"}, {9}, 1.089)
+								  ({"et"}, {10}, 1.068)
+								  ({"et"}, {11}, 1.068)
+								  ({"tt"}, {8}, 1.099)
+								  ({"tt"}, {9}, 1.100)
                                                                   );
 
   //syst norm uncertainties: bin-specific
@@ -834,8 +1273,9 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
          ({"mt"},{15},1.14));*/
     
         //W b-tag extrapolation factor syst uncertainty
+        //Covered later:
         //1) b-tag efficiency uncertainty
-        cb.cp().process({"W"}).AddSyst(cb,
+        /*cb.cp().process({"W"}).AddSyst(cb,
          "CMS_eff_b_13TeV","lnN", SystMapAsymm<channel, bin_id>::init
          ({"mt"},{9},0.96,1.01)
          ({"mt"},{13},0.98,1.04)
@@ -844,7 +1284,7 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
          ({"et"},{9},0.95,1.02)
          ({"et"},{13},0.99,1.02)
          ({"et"},{14},0.90,1.00)
-         ({"et"},{15},0.97,1.00));
+         ({"et"},{15},0.97,1.00));*/
  
         //W b-tag extrapolation factor syst uncertainty
         //Only needed if fitting 1-jet selection at high mT which we're not doing now
@@ -863,18 +1303,10 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
         // Based on variation in fitted factor from different anti-iso sidebands
         cb.cp().channel({"et","mt"}).process({"W"}).AddSyst(cb,
           "CMS_htt_QCD_OS_SS_syst_$CHANNEL_$ATTR(tauiso)_$ATTR(cat)_$ERA", "lnN", SystMap<channel, bin_id>::init
-          ({"mt"}, {8, 14}, 1.040)
-          ({"mt"}, {10}, 1.040)
-          ({"mt"}, {9, 17}, 1.600)
-          ({"mt"}, {11}, 1.600)
-          ({"mt"}, {12, 26}, 1.040)
-          ({"mt"}, {13, 29}, 1.600)
-          ({"et"}, {8, 14}, 1.120)
-          ({"et"}, {10}, 1.120)
-          ({"et"}, {9, 17}, 1.600)
-          ({"et"}, {11}, 1.600)
-          ({"et"}, {12, 26}, 1.120)
-          ({"et"}, {13, 29}, 1.600));
+          ({"mt"}, {8, 10,14}, 1.04)
+          ({"mt"}, {9, 11, 17}, 1.32)
+          ({"et"}, {8,10, 14}, 1.120)
+          ({"et"}, {9, 11,17}, 1.27));
 
         cb.cp().AddSyst(cb,
           "CMS_scale_j_13TeV", "lnN", SystMapAsymm<channel,bin_id,process>::init
@@ -972,29 +1404,32 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
          ({"et"}, {14}, {"VVT"}, 1.01,0.99)
          ({"et"}, {15}, {"TTJ"}, 1.02,0.97)
          ({"et"}, {16}, {"TTJ"}, 1.02,0.97)
-         ({"et"}, {16}, {"TTT"}, 1.03,0.97)
+         ({"et"}, {16}, {"TTT"}, 1.03,0.96)
          ({"et"}, {16}, {"VVJ"}, 1.01,0.99)
          ({"et"}, {16}, {"VVT"}, 1.01,0.99)
-         ({"et"}, {17}, {"TTJ"}, 0.98,1.01)
-         ({"et"}, {17}, {"TTT"}, 0.98,1.02)
-         ({"et"}, {17}, {"VVJ"}, 0.97,1.03)
-         ({"et"}, {17}, {"VVT"}, 0.98,1.01)
-         ({"et"}, {17}, {"ZL"}, 0.99,1.08)
-         ({"et"}, {17}, {"ZTT"}, 0.98,1.02)
+         ({"et"}, {17}, {"TTJ"}, 0.99,1.01)
+         ({"et"}, {17}, {"TTT"}, 0.99,1.01)
+         ({"et"}, {17}, {"VVJ"}, 0.98,1.02)
+         ({"et"}, {17}, {"VVT"}, 0.99,1.01)
+         ({"et"}, {17}, {"ZJ"}, 0.96,1.01)
+         ({"et"}, {17}, {"ZL"}, 0.98,1.04)
+         ({"et"}, {17}, {"ZTT"}, 0.99,1.04)
          ({"et"}, {18}, {"TTJ"}, 0.99,1.02)
-         ({"et"}, {18}, {"VVJ"}, 0.99,1.03)
-         ({"et"}, {18}, {"VVT"}, 1.01,0.99)
-         ({"et"}, {19}, {"TTJ"}, 0.97,1.01)
-         ({"et"}, {19}, {"VVJ"}, 0.99,1.01)
-         ({"et"}, {19}, {"VVT"}, 0.96,1.01)
-         ({"et"}, {19}, {"ZJ"}, 0.99,1.07)
-         ({"et"}, {21}, {"TTJ"}, 1.03,0.98)
+         ({"et"}, {18}, {"VVJ"}, 0.99,1.01)
+         ({"et"}, {18}, {"VVT"}, 0.99,1.01)
+         ({"et"}, {19}, {"TTJ"}, 0.99,1.01)
+         ({"et"}, {19}, {"TTT"}, 0.99,1.01)
+         ({"et"}, {19}, {"VVJ"}, 0.99,1.02)
+         ({"et"}, {19}, {"VVT"}, 0.98,1.05)
+         ({"et"}, {19}, {"ZJ"}, 0.99,1.02)
+         ({"et"}, {21}, {"TTJ"}, 1.03,0.99)
          ({"et"}, {21}, {"TTT"}, 1.01,0.95)
          ({"et"}, {21}, {"VVJ"}, 1.01,0.99)
          ({"et"}, {21}, {"ZL"}, 1.01,0.99)
          ({"et"}, {24}, {"TTJ"}, 0.98,1.01)
-         ({"et"}, {24}, {"VVJ"}, 0.99,1.04)
-         ({"et"}, {24}, {"ZJ"}, 0.99,1.07)
+         ({"et"}, {24}, {"TTT"}, 0.99,1.03)
+         ({"et"}, {24}, {"VVJ"}, 0.99,1.02)
+         ({"et"}, {24}, {"ZJ"}, 0.99,1.05)
          ({"mt"}, {14}, {"TTJ"}, 1.02,0.98)
          ({"mt"}, {14}, {"TTT"}, 1.03,0.97)
          ({"mt"}, {14}, {"VVJ"}, 1.01,0.99)
@@ -1002,44 +1437,49 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
          ({"mt"}, {15}, {"TTJ"}, 1.02,0.98)
          ({"mt"}, {15}, {"TTT"}, 1.03,0.98)
          ({"mt"}, {15}, {"VVJ"}, 1.01,0.99)
+         ({"mt"}, {15}, {"ZL"}, 1.01,0.99)
          ({"mt"}, {16}, {"TTJ"}, 1.02,0.98)
          ({"mt"}, {16}, {"TTT"}, 1.03,0.99)
          ({"mt"}, {17}, {"TTJ"}, 0.99,1.01)
-         ({"mt"}, {17}, {"TTT"}, 0.98,1.01)
+         ({"mt"}, {17}, {"TTT"}, 0.99,1.01)
          ({"mt"}, {17}, {"VVJ"}, 0.98,1.01)
-         ({"mt"}, {17}, {"VVT"}, 0.98,1.02)
-         ({"mt"}, {17}, {"ZJ"}, 0.97,1.01)
-         ({"mt"}, {17}, {"ZL"}, 0.95,1.01)
-         ({"mt"}, {17}, {"ZTT"}, 0.99,1.03)
-         ({"mt"}, {18}, {"TTJ"}, 0.96,1.01)
-         ({"mt"}, {18}, {"TTT"}, 0.92,1.06)
-         ({"mt"}, {18}, {"VVJ"}, 0.96,1.04)
-         ({"mt"}, {19}, {"TTJ"}, 0.98,1.01)
-         ({"mt"}, {19}, {"VVJ"}, 0.98,1.01)
-         ({"mt"}, {19}, {"VVT"}, 0.96,1.05)
+         ({"mt"}, {17}, {"VVT"}, 0.99,1.02)
+         ({"mt"}, {17}, {"ZJ"}, 0.94,1.01)
+         ({"mt"}, {17}, {"ZTT"}, 0.98,1.02)
+         ({"mt"}, {18}, {"TTJ"}, 0.99,1.01)
+         ({"mt"}, {18}, {"TTT"}, 0.99,1.01)
+         ({"mt"}, {18}, {"VVJ"}, 0.99,1.01)
+         ({"mt"}, {18}, {"VVT"}, 0.98,1.01)
+         ({"mt"}, {18}, {"ZJ"}, 0.95,1.01)
+         ({"mt"}, {19}, {"TTJ"}, 0.99,1.01)
+         ({"mt"}, {19}, {"TTT"}, 0.99,1.01)
+         ({"mt"}, {19}, {"VVJ"}, 0.99,1.01)
+         ({"mt"}, {19}, {"VVT"}, 0.99,1.03)
          ({"mt"}, {21}, {"TTJ"}, 1.01,0.98)
-         ({"mt"}, {24}, {"TTJ"}, 0.99,1.02)
-         ({"mt"}, {24}, {"VVJ"}, 0.98,1.01)
-         ({"mt"}, {24}, {"VVT"}, 0.99,1.06)
-         ({"mt"}, {24}, {"ZJ"}, 0.97,1.04)
+         ({"mt"}, {24}, {"TTJ"}, 0.99,1.01)
+         ({"mt"}, {24}, {"VVJ"}, 0.99,1.01)
+         ({"mt"}, {24}, {"VVT"}, 0.95,1.04)
+         ({"mt"}, {24}, {"ZJ"}, 0.98,1.02)
       );
 
       cb.cp().AddSyst(cb,
          "CMS_fake_b_$ERA", "lnN", SystMapAsymm<channel,bin_id,process>::init
+         ({"et"}, {17}, {"ZL"}, 0.99,1.06)
          ({"et"}, {17}, {"ZTT"}, 0.98,1.01)
-         ({"et"}, {18}, {"ZJ"}, 0.99,1.04)
+         ({"et"}, {18}, {"VVT"}, 0.99,1.01)
+         ({"et"}, {18}, {"ZJ"}, 0.99,1.02)
+         ({"et"}, {19}, {"VVT"}, 0.96,1.01)
          ({"et"}, {21}, {"TTT"}, 1.01,0.94)
-         ({"et"}, {24}, {"TTJ"}, 0.99,1.01)
-         ({"et"}, {24}, {"ZJ"}, 0.94,1.06)
+         ({"et"}, {24}, {"TTT"}, 0.99,1.03)
+         ({"et"}, {24}, {"VVT"}, 0.99,0.99)
+         ({"et"}, {24}, {"ZJ"}, 0.95,1.05)
          ({"mt"}, {15}, {"ZL"}, 1.01,0.99)
-         ({"mt"}, {17}, {"ZJ"}, 0.97,1.01)
-         ({"mt"}, {17}, {"ZTT"}, 0.97,1.05)
-         ({"mt"}, {18}, {"VVT"}, 0.94,1.06)
-         ({"mt"}, {18}, {"ZJ"}, 0.99,1.01)
-         ({"mt"}, {19}, {"TTJ"}, 0.99,1.01)
-         ({"mt"}, {19}, {"VVT"}, 0.94,1.01)
-         ({"mt"}, {19}, {"ZJ"}, 0.99,1.01)
-         ({"mt"}, {24}, {"VVT"}, 0.95,1.01)
+         ({"mt"}, {17}, {"ZJ"}, 0.98,1.01)
+         ({"mt"}, {17}, {"ZTT"}, 0.97,1.03)
+         ({"mt"}, {18}, {"VVJ"}, 0.99,1.01)
+         ({"mt"}, {18}, {"VVT"}, 0.95,1.01)
+         ({"mt"}, {19}, {"VVT"}, 0.97,0.99)
+         ({"mt"}, {24}, {"VVT"}, 0.98,1.01)
       );
 
       // Should set a sensible range for our rateParams
@@ -1050,13 +1490,17 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
     }
     if (zmm_fit) {
         cb.SetFlag("filters-use-regex", true);
-        cb.cp().attr({"nobtag"},"cat").process({"ZTT"}).AddSyst(cb, "rate_ZMM_ZTT_nobtag", "rateParam", SystMap<>::init(1.0));
-        cb.cp().bin({"zmm_nobtag"}).process({"ZL"}).AddSyst(cb, "rate_ZMM_ZTT_nobtag", "rateParam", SystMap<>::init(1.0));
-        cb.cp().attr({"btag"},"cat").process({"ZTT"}).AddSyst(cb, "rate_ZMM_ZTT_btag", "rateParam", SystMap<>::init(1.0));
-        cb.cp().bin({"zmm_btag"}).process({"ZL"}).AddSyst(cb, "rate_ZMM_ZTT_btag", "rateParam", SystMap<>::init(1.0));
+        cb.cp().channel({"et","mt","em","tt"}).attr({"nobtag"},"cat").process({"ZTT"}).AddSyst(cb, "rate_ZMM_ZTT_nobtag", "rateParam", SystMap<>::init(1.0));
+        cb.cp().bin({"zmm_nobtag"}).process({"ZLL"}).AddSyst(cb, "rate_ZMM_ZTT_nobtag", "rateParam", SystMap<>::init(1.0));
+        cb.cp().channel({"et","mt","em","tt"}).attr({"btag"},"cat").process({"ZTT"}).AddSyst(cb, "rate_ZMM_ZTT_btag", "rateParam", SystMap<>::init(1.0));
+        cb.cp().bin({"zmm_btag"}).process({"ZLL"}).AddSyst(cb, "rate_ZMM_ZTT_btag", "rateParam", SystMap<>::init(1.0));
         cb.GetParameter("rate_ZMM_ZTT_btag")->set_range(0.8, 1.2);
         cb.GetParameter("rate_ZMM_ZTT_nobtag")->set_range(0.95, 1.05);
         cb.SetFlag("filters-use-regex", false);
     }
+   if(ttbar_fit) {
+       cb_sig.cp().attr({"nobtag","btag","all"},"cat").process({"TTT","TT"}).AddSyst(cb, "rate_TT","rateParam",SystMap<>::init(1.0));
+       cb.GetParameter("rate_TT")->set_range(0.0,5.0);
+   }
   }
 }

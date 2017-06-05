@@ -45,16 +45,32 @@ void To1Bin(T* proc)
                                    // integral of the hist
 }
 
+//Treatment is different for single bin control regions than for multi-bin cr's
+//Introduce a BinIsSBControlRegion to filter out the single bin cr's and 
+//Let BinIsControlRegion filter all control regions
+
+bool BinIsSBControlRegion(ch::Object const* obj)
+{
+    return ((boost::regex_search(obj->bin(),boost::regex{"_cr$"})&&(obj->channel()!=std::string("ttbar"))) || (obj->channel() == std::string("zmm")));
+}
+
+// Useful to have the inverse sometimes too
+bool BinIsNotSBControlRegion(ch::Object const* obj)
+{
+    return !BinIsSBControlRegion(obj);
+}
+
+//BinIsControlRegion filters classic method cr's, z->mumu and ttbar control region
 bool BinIsControlRegion(ch::Object const* obj)
 {
     return (boost::regex_search(obj->bin(),boost::regex{"_cr$"}) || (obj->channel() == std::string("zmm")));
 }
 
-// Useful to have the inverse sometimes too
 bool BinIsNotControlRegion(ch::Object const* obj)
 {
     return !BinIsControlRegion(obj);
 }
+
 
 
 
@@ -80,6 +96,7 @@ int main(int argc, char** argv) {
   bool poisson_bbb = false;
   bool do_w_weighting = true;
   bool zmm_fit = true;
+  bool ttbar_fit = true;
   bool do_jetfakes = false;
   int use_histfunc = 0;
   string chan;
@@ -89,8 +106,8 @@ int main(int argc, char** argv) {
     ("mass,m", po::value<string>(&mass)->default_value(mass))
     ("input_folder_em", po::value<string>(&input_folder_em)->default_value("DESY"))
     ("input_folder_et", po::value<string>(&input_folder_et)->default_value("Imperial"))
-    ("input_folder_mt", po::value<string>(&input_folder_mt)->default_value("Imperial"))
-    ("input_folder_tt", po::value<string>(&input_folder_tt)->default_value("Imperial"))
+    ("input_folder_mt", po::value<string>(&input_folder_mt)->default_value("KIT"))
+    ("input_folder_tt", po::value<string>(&input_folder_tt)->default_value("Vienna"))
     ("input_folder_zmm", po::value<string>(&input_folder_zmm)->default_value("KIT"))
     ("postfix", po::value<string>(&postfix)->default_value(""))
     ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(false))
@@ -100,6 +117,7 @@ int main(int argc, char** argv) {
     ("SM125,h", po::value<string>(&SM125)->default_value(SM125))
     ("control_region", po::value<int>(&control_region)->default_value(0))
     ("zmm_fit", po::value<bool>(&zmm_fit)->default_value(true))
+    ("ttbar_fit", po::value<bool>(&ttbar_fit)->default_value(false))
     ("jetfakes", po::value<bool>(&do_jetfakes)->default_value(false))
     ("channel", po::value<string>(&chan)->default_value("all"))
     ("check_neg_bins", po::value<bool>(&check_neg_bins)->default_value(false))
@@ -122,15 +140,17 @@ int main(int argc, char** argv) {
   input_dir["et"]  = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMFull2016/shapes/"+input_folder_et+"/";
   input_dir["tt"]  = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMFull2016/shapes/"+input_folder_tt+"/";
   input_dir["zmm"]  = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMFull2016/shapes/"+input_folder_zmm+"/";
+  input_dir["ttbar"]  = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMFull2016/shapes/"+input_folder_em+"/";
 
   VString chns;
   if ( chan.find("mt") != std::string::npos ) chns.push_back("mt");
   if ( chan.find("et") != std::string::npos ) chns.push_back("et");
   if ( chan.find("em") != std::string::npos ) chns.push_back("em");
   if ( chan.find("tt") != std::string::npos ) chns.push_back("tt");
-  if ( chan=="all" ) chns = {"mt","et","tt"/*,"em"*/};
+  if ( chan=="all" ) chns = {"mt","et","tt","em"};
 
   if (zmm_fit) chns.push_back("zmm");
+  if (ttbar_fit) chns.push_back("ttbar");
 
   RooRealVar mA(mass.c_str(), mass.c_str(), 90., 3200.);
   mA.setConstant(true);
@@ -148,7 +168,8 @@ int main(int argc, char** argv) {
     bkg_procs["tt"] = {"W", "QCD", "ZL", "ZJ", "TTT","TTJ", "VVT","VVJ","ZTT"};
   }
   bkg_procs["em"] = {"W", "QCD", "ZLL", "TT", "VV", "ZTT"};
-  bkg_procs["zmm"] = {"W", "QCD", "ZL", "ZJ", "TT", "VV", "ZTT"};
+  bkg_procs["zmm"] = {"W", "QCD", "ZLL", "TT", "VV", "ZTT"};
+  bkg_procs["ttbar"] = {"W", "QCD", "ZLL", "TT", "VV", "ZTT"};
 
   VString SM_procs = {"ggH_SM125", "qqH_SM125", "ZH_SM125", "WminusH_SM125","WplusH_SM125"};
 
@@ -218,12 +239,16 @@ int main(int argc, char** argv) {
     {9, "zmm_btag"}
     };
 
+ cats["ttbar_13TeV"] = {
+   {1, "ttbar_cr"}
+  };
+
   if (control_region > 0){
       // for each channel use the categories >= 10 for the control regions
       // the control regions are ordered in triples (10,11,12),(13,14,15)...
       for (auto chn : chns){
         // for em or tt do nothing
-        if (ch::contains({"em", "tt", "zmm"}, chn)) {
+        if (ch::contains({"em", "tt", "zmm","ttbar"}, chn)) {
           std::cout << " - Skipping extra control regions for channel " << chn << "\n";
           continue;
         }
@@ -244,7 +269,7 @@ int main(int argc, char** argv) {
       }
   }
 
-  vector<string> masses = {"90","100","110","120","130","140","160","180", "200", "250", "350", "400", "450", "500"/*, "600"*/, "700", "800", "900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
+  vector<string> masses = {"90","100","110","120","130","140","160","180", "200", "250", "350", "400", "450", "500", "600", "700", "800", "900","1000","1200","1400","1600","1800","2000","2300","2600","2900","3200"};
 
   map<string, VString> signal_types = {
     {"ggH", {"ggh_htautau", "ggH_Htautau", "ggA_Atautau"}},
@@ -267,7 +292,7 @@ int main(int argc, char** argv) {
     if(SM125==string("bkg_SM125") && chn!="zmm") cb.AddProcesses({"*"}, {"htt"}, {"13TeV"}, {chn}, SM_procs, cats[chn+"_13TeV"], false);
     if(SM125==string("signal_SM125") && chn!="zmm") cb.AddProcesses({"*"}, {"htt"}, {"13TeV"}, {chn}, SM_procs, cats[chn+"_13TeV"], true);
     }
-  if ((control_region > 0) || zmm_fit){
+  if ((control_region > 0) || zmm_fit ||ttbar_fit){
       // Since we now account for QCD in the high mT region we only
       // need to filter signal processes
       cb.FilterAll([](ch::Object const* obj) {
@@ -278,23 +303,25 @@ int main(int argc, char** argv) {
 
 
 
-  ch::AddMSSMRun2Systematics(cb, control_region, zmm_fit);
+  ch::AddMSSMRun2Systematics(cb, control_region, zmm_fit, ttbar_fit);
   //! [part7]
   for (string chn:chns){
+    std::string chn_label = chn;
+    if(chn==std::string("ttbar")) chn_label = "em";
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
-        input_dir[chn] + "htt_"+chn+".inputs-mssm-13TeV"+postfix+".root",
+        input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
         "$BIN/$PROCESS",
         "$BIN/$PROCESS_$SYSTEMATIC");
     if(SM125==string("signal_SM125")) cb.cp().channel({chn}).process(SM_procs).ExtractShapes(
-         input_dir[chn] + "htt_"+chn+".inputs-mssm-13TeV"+postfix+".root",
+         input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
          "$BIN/$PROCESS",
          "$BIN/$PROCESS_$SYSTEMATIC");
     cb.cp().channel({chn}).process(signal_types["ggH"]).ExtractShapes(
-        input_dir[chn] + "htt_"+chn+".inputs-mssm-13TeV"+postfix+".root",
+        input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
         "$BIN/ggH$MASS",
         "$BIN/ggH$MASS_$SYSTEMATIC");
     cb.cp().channel({chn}).process(signal_types["bbH"]).ExtractShapes(
-        input_dir[chn] + "htt_"+chn+".inputs-mssm-13TeV"+postfix+".root",
+        input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
         "$BIN/bbH$MASS",
         "$BIN/bbH$MASS_$SYSTEMATIC");
   }
@@ -302,7 +329,7 @@ int main(int argc, char** argv) {
 
  //Now delete processes with 0 yield
  cb.FilterProcs([&](ch::Process *p) {
-  bool null_yield = !(p->rate() > 0. || BinIsControlRegion(p));
+  bool null_yield = !(p->rate() > 0. || BinIsSBControlRegion(p));
   if (null_yield){
      std::cout << "[Null yield] Removing process with null yield: \n ";
      std::cout << ch::Process::PrintHeader << *p << "\n"; 
@@ -345,7 +372,7 @@ int main(int argc, char** argv) {
 
   // And convert any shapes in the CRs to lnN:
   // Convert all shapes to lnN at this stage
-  cb.cp().FilterSysts(BinIsNotControlRegion).syst_type({"shape"}).ForEachSyst([](ch::Systematic *sys) {
+  cb.cp().FilterSysts(BinIsNotSBControlRegion).syst_type({"shape"}).ForEachSyst([](ch::Systematic *sys) {
     sys->set_type("lnN");
   });
 
@@ -365,8 +392,8 @@ int main(int argc, char** argv) {
 
 
   // Merge to one bin for control region bins
-  cb.cp().FilterAll(BinIsNotControlRegion).ForEachProc(To1Bin<ch::Process>);
-  cb.cp().FilterAll(BinIsNotControlRegion).ForEachObs(To1Bin<ch::Observation>);
+  cb.cp().FilterAll(BinIsNotSBControlRegion).ForEachProc(To1Bin<ch::Process>);
+  cb.cp().FilterAll(BinIsNotSBControlRegion).ForEachObs(To1Bin<ch::Observation>);
 
   // Rebinning
   // --------------------
@@ -391,7 +418,7 @@ int main(int argc, char** argv) {
   if(auto_rebin) rebin.Rebin(cb, cb);
 
   if(manual_rebin) {
-    for(auto b : cb.cp().FilterAll(BinIsControlRegion).bin_set()) {
+    for(auto b : cb.cp().FilterAll(BinIsSBControlRegion).bin_set()) {
       std::cout << "Rebinning by hand for bin: " << b <<  std::endl;
       cb.cp().bin({b}).VariableRebin(binning[b]);
     }
@@ -497,7 +524,7 @@ int main(int argc, char** argv) {
     for (auto chn : chns) {
       std::cout << " - Doing bbb for channel " << chn << "\n";
       bbb.MergeAndAdd(cb.cp().channel({chn}).process({"ZTT", "QCD", "W", "ZJ", "ZL", "TT", "VV", "Ztt", "ttbar", "EWK", "Fakes", "ZMM", "TTT","TTJ","VVT","VVJ", "WJets", "Dibosons"}).FilterAll([](ch::Object const* obj) {
-                  return BinIsControlRegion(obj);
+                  return BinIsSBControlRegion(obj);
                   }), cb);
     }
     // And now do bbb for the control region with a slightly different config:
@@ -508,8 +535,8 @@ int main(int argc, char** argv) {
       .SetFixNorm(false)  // contrary to signal region, bbb *should* change yield here
       .SetVerbosity(1);
     // Will merge but only for non W and QCD processes, to be on the safe side
-    bbb_ctl.MergeBinErrors(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotControlRegion));
-    bbb_ctl.AddBinByBin(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotControlRegion), cb);
+    bbb_ctl.MergeBinErrors(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotSBControlRegion));
+    bbb_ctl.AddBinByBin(cb.cp().process({"QCD", "W"}, false).FilterProcs(BinIsNotSBControlRegion), cb);
     cout << " done\n";
   }
 
@@ -517,6 +544,13 @@ int main(int argc, char** argv) {
   /*cb.cp().syst_name({"CMS_scale_j_13TeV"}).ForEachSyst([](ch::Systematic *sys) { sys->set_type("lnN");});
   cb.cp().syst_name({"CMS_scale_b_13TeV"}).ForEachSyst([](ch::Systematic *sys) { sys->set_type("lnN");});
   cb.cp().syst_name({"CMS_fake_b_13TeV"}).ForEachSyst([](ch::Systematic *sys) { sys->set_type("lnN");});*/
+
+  //Need to rename norm_ff_tt_dm0_njet0_stat and norm_ff_tt_dm1_njet0_stat to contain the channel directives
+  cb.cp().channel({"mt"}).RenameSystematic(cb,"norm_ff_tt_dm0_njet0_stat","norm_ff_tt_dm0_mt_stat");
+  cb.cp().channel({"mt"}).RenameSystematic(cb,"norm_ff_tt_dm1_njet0_stat","norm_ff_tt_dm1_mt_stat");
+  cb.cp().channel({"et"}).RenameSystematic(cb,"norm_ff_tt_dm0_njet0_stat","norm_ff_tt_dm0_et_stat");
+  cb.cp().channel({"et"}).RenameSystematic(cb,"norm_ff_tt_dm1_njet0_stat","norm_ff_tt_dm1_et_stat");
+
 
   // This function modifies every entry to have a standardised bin name of
   // the form: {analysis}_{channel}_{bin_id}_{era}
@@ -593,28 +627,39 @@ int main(int argc, char** argv) {
 
   writer.WriteCards("cmb", cb);
   for (auto chn : chns) {
-    if(chn == std::string("zmm"))
+    if(chn == std::string("zmm") || chn == std::string("ttbar"))
     {
         continue;
     }
     // per-channel
-    writer.WriteCards(chn, cb.cp().channel({chn, "zmm"}));
+    writer.WriteCards(chn, cb.cp().channel({chn, "zmm","ttbar"}));
     // And per-channel-category
-    writer.WriteCards("htt_"+chn+"_8_13TeV", cb.cp().channel({chn,"zmm"}).attr({"tight","high"},"mtsel").attr({"nobtag"},"cat"));
-    writer.WriteCards("htt_"+chn+"_9_13TeV", cb.cp().channel({chn,"zmm"}).attr({"tight","high"},"mtsel").attr({"btag"},"cat"));
-    if(chn != std::string("tt")){
-      writer.WriteCards("htt_"+chn+"_10_13TeV", cb.cp().channel({chn,"zmm"}).attr({"loose","high"},"mtsel").attr({"nobtag"},"cat"));
-      writer.WriteCards("htt_"+chn+"_11_13TeV", cb.cp().channel({chn,"zmm"}).attr({"loose","high"},"mtsel").attr({"btag"},"cat"));
+    if(chn == std::string("et") || chn ==std::string("mt")){
+      writer.WriteCards("htt_"+chn+"_8_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"tight","high","all"},"mtsel").attr({"nobtag","all"},"cat"));
+      writer.WriteCards("htt_"+chn+"_9_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"tight","high","all"},"mtsel").attr({"btag","all"},"cat"));
+      writer.WriteCards("htt_"+chn+"_10_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"loose","high","all"},"mtsel").attr({"nobtag","all"},"cat"));
+      writer.WriteCards("htt_"+chn+"_11_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"loose","high","all"},"mtsel").attr({"btag","all"},"cat"));
+    }
+    if(chn == std::string("tt")){
+      writer.WriteCards("htt_"+chn+"_8_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"nobtag","all"},"cat"));
+      writer.WriteCards("htt_"+chn+"_9_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"btag","all"},"cat"));
     }
     if(chn == std::string("em")){
-        writer.WriteCards("htt_"+chn+"_12_13TeV", cb.cp().channel({chn,"zmm"}).bin_id({12}));
-        writer.WriteCards("htt_"+chn+"_13_13TeV", cb.cp().channel({chn,"zmm"}).bin_id({13}));
+      writer.WriteCards("htt_"+chn+"_8_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"low","all"},"pzeta").attr({"nobtag","all"},"cat"));
+      writer.WriteCards("htt_"+chn+"_9_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"low","all"},"pzeta").attr({"btag","all"},"cat"));
+      writer.WriteCards("htt_"+chn+"_10_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"medium","all"},"pzeta").attr({"nobtag","all"},"cat"));
+      writer.WriteCards("htt_"+chn+"_11_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"medium","all"},"pzeta").attr({"btag","all"},"cat"));
+      writer.WriteCards("htt_"+chn+"_12_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"high","all"},"pzeta").attr({"nobtag","all"},"cat"));
+      writer.WriteCards("htt_"+chn+"_13_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"high","all"},"pzeta").attr({"btag","all"},"cat"));
     }
+   //b-tag and no b-tag per channel:
+   writer.WriteCards("htt_"+chn+"_nobtag_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"nobtag","all"},"cat"));
+   writer.WriteCards("htt_"+chn+"_btag_13TeV", cb.cp().channel({chn,"zmm","ttbar"}).attr({"btag","all"},"cat"));
   }
   // For btag/nobtag areas want to include control regions. This will
   // work even if the extra categories aren't there.
-  writer.WriteCards("htt_cmb_btag_13TeV", cb.cp().attr({"btag"},"cat"));
-  writer.WriteCards("htt_cmb_nobtag_13TeV", cb.cp().attr({"nobtag"},"cat"));
+  writer.WriteCards("htt_cmb_btag_13TeV", cb.cp().attr({"btag","all"},"cat"));
+  writer.WriteCards("htt_cmb_nobtag_13TeV", cb.cp().attr({"nobtag","all"},"cat"));
 
   cb.PrintAll();
   cout << " done\n";
