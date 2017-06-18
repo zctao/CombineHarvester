@@ -163,6 +163,8 @@ CombineHarvester CombineHarvester::deep() {
       cpy.procs_[i] = std::make_shared<Process>(*(procs_[i]));
       if (procs_[i]->pdf())
         cpy.procs_[i]->set_pdf(pdf_map.at(procs_[i]->pdf()));
+      if (procs_[i]->observable())
+        cpy.procs_[i]->set_observable(var_map.at(procs_[i]->observable()));
       if (procs_[i]->data())
         cpy.procs_[i]->set_data(dat_map.at(procs_[i]->data()));
       if (procs_[i]->norm())
@@ -473,6 +475,12 @@ void CombineHarvester::LoadShapes(Process* entry,
       if (pdf) {
         RooArgSet argset = ParametersByName(pdf, data_obj->get());
         ImportParameters(&argset);
+        if (!entry->observable()) {
+          std::string var_name;
+          if (data_obj) var_name = data_obj->get()->first()->GetName();
+          entry->set_observable(
+              (RooRealVar*)entry->pdf()->findServer(var_name.c_str()));
+        }
       }
       if (norm) {
         RooArgSet argset = ParametersByName(norm, data_obj->get());
