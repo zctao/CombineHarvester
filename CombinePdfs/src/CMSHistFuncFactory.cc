@@ -19,12 +19,11 @@ namespace ch {
 
 /*
 TODO:
-1) Observed data
 2) Morphing options
 3) Remove morphing proc errors
 */
 
-CMSHistFuncFactory::CMSHistFuncFactory() : v_(1), hist_mode_(0) {}
+CMSHistFuncFactory::CMSHistFuncFactory() : v_(1), hist_mode_(0), rebin_(true) {}
 
 void CMSHistFuncFactory::Run(ch::CombineHarvester &cb, RooWorkspace &ws) {
   for (auto const& bin : cb.bin_set()) {
@@ -35,10 +34,11 @@ void CMSHistFuncFactory::Run(ch::CombineHarvester &cb, RooWorkspace &ws) {
       }
     }
     TH1F data_hist = cb.cp().bin({bin}).GetObservedShape();
+    if (rebin_) data_hist = RebinHist(data_hist);
     // data_hist.Print("range");
 
     RooRealVar *xvar = ws.var(TString::Format("CMS_x_%s", bin.c_str()));
-    RooDataHist rdh_dat(TString::Format("%s_data_obs_morph", bin.c_str()), "",
+    RooDataHist rdh_dat(TString::Format("%s_data_obs", bin.c_str()), "",
                         RooArgList(*xvar), &data_hist);
 
     ws.import(rdh_dat);
@@ -306,6 +306,7 @@ void CMSHistFuncFactory::RunSingleProc(CombineHarvester& cb, RooWorkspace& ws,
       // and we need the binning of these to be in sync.
       hist_arr[mi][0] =
           std::make_shared<TH1F>(AsTH1F(pr_arr[mi]->ClonedScaledShape().get()));
+      if (rebin_) *hist_arr[mi][0] = RebinHist(*hist_arr[mi][0]);
       if (m > 1) {
         for (int b = 1; b < hist_arr[mi][0]->GetNbinsX() + 1; ++b) {
           hist_arr[mi][0]->SetBinError(b, 0.);
@@ -326,6 +327,8 @@ void CMSHistFuncFactory::RunSingleProc(CombineHarvester& cb, RooWorkspace& ws,
             std::make_shared<TH1F>(AsTH1F(ss_arr[ssi][mi]->shape_u()));
         hist_arr[mi][2 + 2 * ssi] =
             std::make_shared<TH1F>(AsTH1F(ss_arr[ssi][mi]->shape_d()));
+        if (rebin_) *hist_arr[mi][1 + 2 * ssi] = RebinHist(*hist_arr[mi][1 + 2 * ssi]);
+        if (rebin_) *hist_arr[mi][2 + 2 * ssi] = RebinHist(*hist_arr[mi][2 + 2 * ssi]);
         TH1F* h_hi = hist_arr[mi][1 + 2 * ssi].get();
         TH1F* h_lo = hist_arr[mi][2 + 2 * ssi].get();
         if (h_hi->Integral() > 0.) {

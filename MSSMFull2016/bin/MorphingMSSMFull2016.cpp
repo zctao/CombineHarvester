@@ -603,7 +603,7 @@ int main(int argc, char** argv) {
   }
   if (use_histfunc) {
     cb.ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
-    cb.ExtractData("htt", "$BIN_$PROCESS_morph");
+    cb.ExtractData("htt", "$BIN_$PROCESS");
     if (use_histfunc == 1) {
       cb.AddDatacardLineAtEnd("* autoMCStats -1");
     } else if (use_histfunc == 2) {

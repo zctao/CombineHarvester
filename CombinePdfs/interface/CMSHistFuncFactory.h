@@ -29,6 +29,7 @@ private:
   void RunSingleProc(CombineHarvester& cb, RooWorkspace& ws, std::string bin, std::string process);
   std::map<std::string, RooRealVar> obs_;
   unsigned hist_mode_;
+  bool rebin_;
 
   TH1F AsTH1F(TH1 const* hist) {
     TH1F res;
