@@ -456,7 +456,7 @@ void CMSHistFuncFactory::RunSingleProc(CombineHarvester& cb, RooWorkspace& ws,
     // Create the 1D spline directly from the rate array
     //! [part4]
     std::shared_ptr<RooSpline1D> rate_spline;
-    if (m > 1) rate_spline = std::make_shared<RooSpline1D>("interp_rate_"+key, "", *mass_var,
+    if (m > 1) rate_spline = std::make_shared<RooSpline1D>("interp_rate_"+key, "", *mass_var[process],
                           force_template_limit ? m+2 : m,
                           force_template_limit ? new_m_vec.data() : m_vec.data(),
                           force_template_limit ? new_rate_arr.data() : rate_arr.data(),
@@ -475,10 +475,10 @@ void CMSHistFuncFactory::RunSingleProc(CombineHarvester& cb, RooWorkspace& ws,
     for (unsigned ssi = 0; ssi < ss; ++ssi) {
       if (m > 1) {
         ss_spl_hi_arr[ssi] = std::make_shared<RooSpline1D>("spline_hi_" +
-            key + "_" + ss_vec[ssi], "", *mass_var, m, m_vec.data(),
+            key + "_" + ss_vec[ssi], "", *mass_var[process], m, m_vec.data(),
             ss_k_hi_arr[ssi].origin(), interp);
         ss_spl_lo_arr[ssi] = std::make_shared<RooSpline1D>("spline_lo_" +
-            key + "_" + ss_vec[ssi], "", *mass_var, m, m_vec.data(),
+            key + "_" + ss_vec[ssi], "", *mass_var[process], m, m_vec.data(),
             ss_k_lo_arr[ssi].origin(), interp);
       } else {
         ss_spl_hi_arr[ssi] = std::make_shared<RooConstVar>(TString::Format("%g", ss_k_hi_arr[ssi][0]), "", ss_k_hi_arr[ssi][0]);
@@ -502,10 +502,10 @@ void CMSHistFuncFactory::RunSingleProc(CombineHarvester& cb, RooWorkspace& ws,
     // then the AsymPows and add to the rate_prod list
     for (unsigned lmsi = 0; lmsi < lms; ++lmsi) {
       lms_spl_hi_arr[lmsi] = std::make_shared<RooSpline1D>("spline_hi_" +
-          key + "_" + lms_vec[lmsi], "", *mass_var, m, m_vec.data(),
+          key + "_" + lms_vec[lmsi], "", *mass_var[process], m, m_vec.data(),
           lms_k_hi_arr[lmsi].origin(), interp);
       lms_spl_lo_arr[lmsi] = std::make_shared<RooSpline1D>("spline_lo_" +
-          key + "_" + lms_vec[lmsi], "", *mass_var, m, m_vec.data(),
+          key + "_" + lms_vec[lmsi], "", *mass_var[process], m, m_vec.data(),
           lms_k_lo_arr[lmsi].origin(), interp);
       lms_asy_arr[lmsi] = std::make_shared<AsymPow>("systeff_" +
           key + "_" + lms_vec[lmsi], "", *(lms_spl_lo_arr[lmsi]),
@@ -568,7 +568,7 @@ void CMSHistFuncFactory::RunSingleProc(CombineHarvester& cb, RooWorkspace& ws,
     morph_func.setHorizontalType(CMSHistFunc::HorizontalType::Integral);
     morph_func.setVerticalMorphs(ss_list);
     if (m > 1) {
-      morph_func.addHorizontalMorph(*mass_var, TVectorD(m, m_vec.data()));
+      morph_func.addHorizontalMorph(*mass_var[process], TVectorD(m, m_vec.data()));
     }
     morph_func.prepareStorage();
 

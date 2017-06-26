@@ -13,7 +13,8 @@ Process::Process()
       pdf_(nullptr),
       data_(nullptr),
       norm_(nullptr),
-      cached_obs_(nullptr) {
+      cached_obs_(nullptr),
+      cached_int_(nullptr) {
   }
 
 Process::~Process() {

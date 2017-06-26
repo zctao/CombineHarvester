@@ -517,8 +517,8 @@ int main(int argc, char** argv) {
     auto bbb = ch::BinByBinFactory()
       .SetPattern("CMS_$ANALYSIS_$BIN_$ERA_$PROCESS_bin_$#")
       .SetAddThreshold(0.)
-      .SetMergeThreshold(0.4)
-      .SetFixNorm(true)
+      .SetMergeThreshold(1.0)
+      .SetFixNorm(false)
       .SetMergeSaturatedBins(false)
       .SetPoissonErrors(poisson_bbb);
     for (auto chn : chns) {
@@ -531,7 +531,7 @@ int main(int argc, char** argv) {
     auto bbb_ctl = ch::BinByBinFactory()
       .SetPattern("CMS_$ANALYSIS_$BIN_$ERA_$PROCESS_bin_$#")
       .SetAddThreshold(0.)
-      .SetMergeThreshold(0.4)
+      .SetMergeThreshold(1.0)
       .SetFixNorm(false)  // contrary to signal region, bbb *should* change yield here
       .SetVerbosity(1);
     // Will merge but only for non W and QCD processes, to be on the safe side
@@ -588,20 +588,20 @@ int main(int argc, char** argv) {
   }
   if (do_morphing && use_histfunc) {
     ch::CMSHistFuncFactory hf_factory;
-    hf_factory.SetHorizontalMorphingVariable(mA);
+    hf_factory.SetHorizontalMorphingVariable(mass_var);
     hf_factory.Run(cb, ws);
   }
 
   demo.Close();
-  if (use_histfunc) {
+  if (do_morphing && use_histfunc) {
     cb.SetFlag("workspaces-use-clone", true);
   }
   cb.AddWorkspace(ws);
 
-  if (!use_histfunc) {
+  if (do_morphing && !use_histfunc) {
     cb.cp().process(ch::JoinStr({signal_types["ggH"], signal_types["bbH"]})).ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
   }
-  if (use_histfunc) {
+  if (do_morphing && use_histfunc) {
     cb.ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
     cb.ExtractData("htt", "$BIN_$PROCESS");
     if (use_histfunc == 1) {
@@ -610,6 +610,7 @@ int main(int argc, char** argv) {
       cb.AddDatacardLineAtEnd("* autoMCStats 0");
     }
   }
+  // cb.AddDatacardLineAtEnd("* autoMCStats 0");
 
 
  //Write out datacards. Naming convention important for rest of workflow. We

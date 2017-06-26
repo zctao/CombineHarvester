@@ -21,11 +21,12 @@ namespace ch {
 class CMSHistFuncFactory {
 public:
   void Run(CombineHarvester& cb, RooWorkspace& ws);
-  void SetHorizontalMorphingVariable(RooAbsReal &hvar) { mass_var = &hvar; }
+  void SetHorizontalMorphingVariable(std::map<std::string, RooAbsReal*> &hvar) { mass_var = hvar; }
   CMSHistFuncFactory();
 private:
   unsigned v_;
-  RooAbsReal *mass_var;
+  // RooAbsReal *mass_var;
+  std::map<std::string, RooAbsReal*> mass_var;
   void RunSingleProc(CombineHarvester& cb, RooWorkspace& ws, std::string bin, std::string process);
   std::map<std::string, RooRealVar> obs_;
   unsigned hist_mode_;
