@@ -119,8 +119,7 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
   // Electron and muon efficiencies
   // ------------------------------
   cb.cp().AddSyst(cb, "CMS_eff_m", "lnN", SystMap<channel, process>::init
-    ({"zmm"}, {"ZTT", "TT", "VV", "ZL"},  1.04)
-    ({"zmm"}, {"ZJ"},  1.02)
+    ({"zmm"}, {"ZTT", "TT", "VV", "ZLL"},  1.04)
     ({"ttbar"}, {"ZTT","TT","VV","W","ZLL"}, 1.02)
     ({"mt"}, JoinStr({signal, {"ZTT", "TTT","TTJ", "VVT","VVJ", "ZL", "ZJ"}}),  1.02)
     ({"em"}, JoinStr({signal, {"ZTT", "TT", "VV", "ZLL"}}),       1.02));
@@ -1350,10 +1349,10 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
     }
     if (zmm_fit) {
         cb.SetFlag("filters-use-regex", true);
-        cb.cp().channel({"et","mt","em","tt"}).attr({"nobtag"},"cat").process({"ZTT"}).AddSyst(cb, "rate_ZMM_ZTT_nobtag", "rateParam", SystMap<>::init(1.0));
-        cb.cp().bin({"zmm_nobtag"}).process({"ZLL"}).AddSyst(cb, "rate_ZMM_ZTT_nobtag", "rateParam", SystMap<>::init(1.0));
-        cb.cp().channel({"et","mt","em","tt"}).attr({"btag"},"cat").process({"ZTT"}).AddSyst(cb, "rate_ZMM_ZTT_btag", "rateParam", SystMap<>::init(1.0));
-        cb.cp().bin({"zmm_btag"}).process({"ZLL"}).AddSyst(cb, "rate_ZMM_ZTT_btag", "rateParam", SystMap<>::init(1.0));
+        cb.cp().channel({"et","mt","em","tt"}).attr({"nobtag"},"cat").process({"ZTT"}).AddSyst(cb, "rate_ZMM_ZTT_nobtag", "rateParam", SystMap<>::init(1.02));
+        cb.cp().bin({"zmm_nobtag"}).process({"ZLL"}).AddSyst(cb, "rate_ZMM_ZTT_nobtag", "rateParam", SystMap<>::init(1.02));
+        cb.cp().channel({"et","mt","em","tt"}).attr({"btag"},"cat").process({"ZTT"}).AddSyst(cb, "rate_ZMM_ZTT_btag", "rateParam", SystMap<>::init(1.02));
+        cb.cp().bin({"zmm_btag"}).process({"ZLL"}).AddSyst(cb, "rate_ZMM_ZTT_btag", "rateParam", SystMap<>::init(1.02));
         cb.GetParameter("rate_ZMM_ZTT_btag")->set_range(0.8, 1.2);
         cb.GetParameter("rate_ZMM_ZTT_nobtag")->set_range(0.95, 1.05);
         cb.SetFlag("filters-use-regex", false);
