@@ -101,6 +101,7 @@ int main(int argc, char** argv) {
   bool postfit_plot = false;
   bool partial_unblinding = false;
   bool ggHatNLO = false;
+  std::string ggH_signal = "ggH";
   string chan;
   po::variables_map vm;
   po::options_description config("configuration");
@@ -128,7 +129,8 @@ int main(int argc, char** argv) {
     ("poisson_bbb", po::value<bool>(&poisson_bbb)->default_value(false))
     ("w_weighting", po::value<bool>(&do_w_weighting)->default_value(false))
     ("partial_unblinding", po::value<bool>(&partial_unblinding)->default_value(false))
-    ("ggHatNLO", po::value<bool>(&ggHatNLO)->default_value(false));
+    ("ggHatNLO", po::value<bool>(&ggHatNLO)->default_value(false))
+    ("ggH_signal", po::value<string>(&ggH_signal)->default_value("ggH"));
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
 
@@ -141,7 +143,7 @@ int main(int argc, char** argv) {
   typedef vector<pair<int, string>> Categories;
   std::map<string, string> input_dir;
   input_dir["zmm"]  = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMFull2016/shapes/"+input_folder_zmm+"/";
-  input_dir["ttbar"]  = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMFull2016/shapes/"+input_folder_em+"/";
+  input_dir["ttbar"]  = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMFull2016/shapes/DESY/";
 
   if(!bbH_nlo){
     input_dir["em"]  = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/MSSMFull2016/shapes/"+input_folder_em+"/";
@@ -299,7 +301,8 @@ int main(int argc, char** argv) {
   if(mass=="MH"){
     if(ggHatNLO){
       signal_types = {
-        {"ggH", {"ggh_t", "ggh_b", "ggh_i"}},
+        //{"ggH", {"ggh_t", "ggh_b", "ggh_i"}},
+        {"ggH",{ggH_signal}},  
         {"bbH", {"bbH"}}
       };
     }else{
@@ -349,6 +352,8 @@ int main(int argc, char** argv) {
         VString ggH_type = {*partial_process};
         string hist_name = *partial_process;
         if (hist_name.length()>5) hist_name.erase(5,8);
+        std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1" << std::endl;
+        std::cout << hist_name << std::endl;
         cb.cp().channel({chn}).process(ggH_type).ExtractShapes(
             input_dir[chn] + "htt_"+chn+".inputs-mssm-13TeV"+postfix+".root",
             "$BIN/"+hist_name+"$MASS",
@@ -626,6 +631,15 @@ int main(int argc, char** argv) {
   if(mass=="MH"){
     mass_var = {
       {"ggH", &mA},
+      {"ggh_t", &mA},
+      {"ggh_b", &mA},
+      {"ggh_i", &mA},
+      {"ggA_t", &mA},
+      {"ggA_b", &mA},
+      {"ggA_i", &mA},
+      {"ggH_t", &mA},
+      {"ggH_b", &mA},
+      {"ggH_i", &mA},
       {"bbH", &mA}
     };
   }
