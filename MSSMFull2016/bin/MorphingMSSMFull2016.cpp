@@ -301,8 +301,8 @@ int main(int argc, char** argv) {
   if(mass=="MH"){
     if(ggHatNLO){
       signal_types = {
-        //{"ggH", {"ggh_t", "ggh_b", "ggh_i"}},
-        {"ggH",{ggH_signal}},  
+        //{"ggH", {"ggh_t", "ggh_b", "ggh_i"}}, 
+        {"ggH",{ggH_signal}},
         {"bbH", {"bbH"}}
       };
     }else{
@@ -347,21 +347,19 @@ int main(int argc, char** argv) {
          input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
          "$BIN/$PROCESS",
          "$BIN/$PROCESS_$SYSTEMATIC");
-    if(ggHatNLO){
+    if(ggHatNLO && mass=="MH"){
       for(VString::const_iterator partial_process = signal_types["ggH"].begin(); partial_process != signal_types["ggH"].end(); partial_process++){
         VString ggH_type = {*partial_process};
         string hist_name = *partial_process;
         if (hist_name.length()>5) hist_name.erase(5,8);
-        std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1" << std::endl;
-        std::cout << hist_name << std::endl;
         cb.cp().channel({chn}).process(ggH_type).ExtractShapes(
-            input_dir[chn] + "htt_"+chn+".inputs-mssm-13TeV"+postfix+".root",
+            input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
             "$BIN/"+hist_name+"$MASS",
             "$BIN/"+hist_name+"$MASS_$SYSTEMATIC");
       }
     }else{
       cb.cp().channel({chn}).process(signal_types["ggH"]).ExtractShapes(
-          input_dir[chn] + "htt_"+chn+".inputs-mssm-13TeV"+postfix+".root",
+          input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
           "$BIN/ggH$MASS",
           "$BIN/ggH$MASS_$SYSTEMATIC");
     }
