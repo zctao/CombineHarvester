@@ -347,7 +347,7 @@ int main(int argc, char** argv) {
          input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
          "$BIN/$PROCESS",
          "$BIN/$PROCESS_$SYSTEMATIC");
-    if(ggHatNLO && mass=="MH"){
+    if(ggHatNLO && mass!="MH"){
       for(VString::const_iterator partial_process = signal_types["ggH"].begin(); partial_process != signal_types["ggH"].end(); partial_process++){
         VString ggH_type = {*partial_process};
         string hist_name = *partial_process;
@@ -357,7 +357,13 @@ int main(int argc, char** argv) {
             "$BIN/"+hist_name+"$MASS",
             "$BIN/"+hist_name+"$MASS_$SYSTEMATIC");
       }
-    }else{
+    } if(ggHatNLO && mass=="MH"){
+      string hist_name = ggH_signal;
+      cb.cp().channel({chn}).process(signal_types["ggH"]).ExtractShapes(
+          input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
+          "$BIN/"+hist_name+"$MASS",
+          "$BIN/"+hist_name+"$MASS_$SYSTEMATIC");
+    } else{
       cb.cp().channel({chn}).process(signal_types["ggH"]).ExtractShapes(
           input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
           "$BIN/ggH$MASS",
