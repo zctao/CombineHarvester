@@ -13,6 +13,7 @@ using ch::syst::era;
 using ch::syst::channel;
 using ch::syst::bin_id;
 using ch::syst::process;
+using ch::syst::mass;
 using ch::syst::bin;
 using ch::JoinStr;
 
@@ -114,15 +115,81 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
       ({"ZH_SM125"},1.016)
       ({"WplusH_SM125","WminusH_SM125"},1.019)
       ({"qqH_SM125"},1.021)); 
+ 
+  // MSSM bbH theory uncertainties (should be added for added for NLO MC only) - includes uncertainties due to QCD scale and Qsh scale added linearlly (based on YR4 recomendation)
+
+  cb.cp().process(bbH).AddSyst(cb, "QCDScale_QshScale_bbH","lnN", SystMap<channel,bin_id,mass>::init
+     ({"em","et","mt","tt"}, {8,10,12}, {"80"},   1.034)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"80"},   0.827)
+     ({"em","et","mt","tt"}, {8,10,12}, {"90"},   1.036)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"90"},   0.835)
+     ({"em","et","mt","tt"}, {8,10,12}, {"100"},  1.036)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"100"},  0.847)
+     ({"em","et","mt","tt"}, {8,10,12}, {"110"},  1.038)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"110"},  0.853)
+     ({"em","et","mt","tt"}, {8,10,12}, {"120"},  1.038) 
+     ({"em","et","mt","tt"}, {9,11,13}, {"120"},  0.862)
+     ({"em","et","mt","tt"}, {8,10,12}, {"130"},  1.04 )
+     ({"em","et","mt","tt"}, {9,11,13}, {"130"},  0.867)
+     ({"em","et","mt","tt"}, {8,10,12}, {"140"},  1.04 )  
+     ({"em","et","mt","tt"}, {9,11,13}, {"140"},  0.872)
+     ({"em","et","mt","tt"}, {8,10,12}, {"160"},  1.038)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"160"},  0.887)
+     ({"em","et","mt","tt"}, {8,10,12}, {"180"},  1.038)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"180"},  0.897)
+     ({"em","et","mt","tt"}, {8,10,12}, {"200"},  1.038)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"200"},  0.902)
+     ({"em","et","mt","tt"}, {8,10,12}, {"250"},  1.035)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"250"},  0.922)
+     ({"em","et","mt","tt"}, {8,10,12}, {"350"},  1.033)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"350"},  0.939)
+     ({"em","et","mt","tt"}, {8,10,12}, {"400"},  1.036)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"400"},  0.934)
+     ({"em","et","mt","tt"}, {8,10,12}, {"450"},  1.035)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"450"},  0.94 )
+     ({"em","et","mt","tt"}, {8,10,12}, {"500"},  1.032)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"500"},  0.95 )
+     ({"em","et","mt","tt"}, {8,10,12}, {"600"},  1.034)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"600"},  0.948)
+     ({"em","et","mt","tt"}, {8,10,12}, {"700"},  1.034)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"700"},  0.952)
+     ({"em","et","mt","tt"}, {8,10,12}, {"800"},  1.036)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"800"},  0.948)
+     ({"em","et","mt","tt"}, {8,10,12}, {"900"},  1.036)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"900"},  0.95 )
+     ({"em","et","mt","tt"}, {8,10,12}, {"1000"}, 1.037)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"1000"}, 0.949)
+     ({"em","et","mt","tt"}, {8,10,12}, {"1200"}, 1.037)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"1200"}, 0.951)
+     ({"em","et","mt","tt"}, {8,10,12}, {"1400"}, 1.034)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"1400"}, 0.957)
+     ({"em","et","mt","tt"}, {8,10,12}, {"1600"}, 1.041)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"1600"}, 0.943)
+     ({"em","et","mt","tt"}, {8,10,12}, {"1800"}, 1.037)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"1800"}, 0.952)
+     ({"em","et","mt","tt"}, {8,10,12}, {"2000"}, 1.035)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"2000"}, 0.956)
+     ({"em","et","mt","tt"}, {8,10,12}, {"2300"}, 1.035)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"2300"}, 0.956)
+     ({"em","et","mt","tt"}, {8,10,12}, {"2600"}, 1.039)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"2600"}, 0.95 )
+     ({"em","et","mt","tt"}, {8,10,12}, {"2900"}, 1.036)   
+     ({"em","et","mt","tt"}, {9,11,13}, {"2900"}, 0.954)
+     ({"em","et","mt","tt"}, {8,10,12}, {"3200"}, 1.034) 
+     ({"em","et","mt","tt"}, {9,11,13}, {"3200"}, 0.957));
     
 
   // Electron and muon efficiencies
   // ------------------------------
   cb.cp().AddSyst(cb, "CMS_eff_m", "lnN", SystMap<channel, process>::init
-    ({"zmm"}, {"ZTT", "TT", "VV", "ZLL"},  1.04)
+    ({"zmm"}, {"ZTT", "TT", "VV"},  1.04)
     ({"ttbar"}, {"ZTT","TT","VV","W","ZLL"}, 1.02)
-    ({"mt"}, JoinStr({signal, {"ZTT", "TTT","TTJ", "VVT","VVJ", "ZL", "ZJ"}}),  1.02)
-    ({"em"}, JoinStr({signal, {"ZTT", "TT", "VV", "ZLL"}}),       1.02));
+    ({"mt"},{"ZTT"}, 0.98)
+    ({"em"},{"ZTT"}, 0.98)
+    ({"tt"},{"ZTT"}, 0.96)
+    ({"et"},{"ZTT"}, 0.96)
+    ({"mt"}, JoinStr({signal, {"TTT","TTJ", "VVT","VVJ", "ZL", "ZJ"}}),  1.02)
+    ({"em"}, JoinStr({signal, {"TT", "VV", "ZLL"}}),       1.02));
   
   cb.cp().AddSyst(cb, "CMS_eff_e", "lnN", SystMap<channel, process>::init
     ({"ttbar"}, {"ZTT","TT","VV","W","ZLL"}, 1.02)
@@ -379,9 +446,12 @@ void AddMSSMRun2Systematics(CombineHarvester & cb, int control_region, bool zmm_
     "CMS_htt_dyShape_stat_m400pt40_$ERA", "shape", SystMap<>::init(1.00));
   cb.cp().process(JoinStr({{"ZTT"}})).channel({"et","mt","tt", "em"}).AddSyst(cb,
     "CMS_htt_dyShape_stat_m400pt80_$ERA", "shape", SystMap<>::init(1.00));
+  
+  //cb.cp().process(JoinStr({{"ZTT"}})).channel({"et","mt","tt","em"}).bin_id({8,10,12}).AddSyst(cb,
+    //"CMS_htt_QCDScale_$ERA", "shape", SystMap<>::init(1.00));
 
   //W jet->tau FR shape
-  cb.cp().process(JoinStr({{"W"}})).channel({"et","mt"}).bin_id({8,9}).AddSyst(cb,
+  cb.cp().process(JoinStr({{"W"}})).channel({"et","mt"}).bin_id({8,9,10,11}).AddSyst(cb,
     "CMS_htt_wFakeShape_$ERA","shape",SystMap<>::init(1.00));
 
   //jet->lepton FR (emu)
