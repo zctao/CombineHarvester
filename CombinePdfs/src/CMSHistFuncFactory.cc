@@ -161,6 +161,11 @@ void CMSHistFuncFactory::RunSingleProc(CombineHarvester& cb, RooWorkspace& ws,
       // the end
       ss_scale_var_arr[ssi] =
           std::make_shared<RooRealVar>(ss_vec[ssi].c_str(), "", 0);
+      // Combine will not set up the var for us like it would do with shapeU
+      if (ss_arr[ssi][0]->type() == "shapeU") {
+        ss_scale_var_arr[ssi]->setRange(-1., +1.);
+        ss_scale_var_arr[ssi]->setConstant(false);
+      }
       // We'll make a quick check that the scale factor for this systematic is the
       // same for all mass points. We could do a separate scaling at each mass
       // point but this would create a lot of complications
