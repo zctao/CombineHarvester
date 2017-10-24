@@ -30,28 +30,35 @@ void CMSHistFuncFactory::Run(ch::CombineHarvester &cb, RooWorkspace &ws) {
     for (auto const& proc : cb.cp().bin({bin}).process_set()) {
       if (v_) {
         std::cout << ">> Processing " << bin << "," << proc << "\n";
-        RunSingleProc(cb, ws, bin, proc);
       }
+      RunSingleProc(cb, ws, bin, proc, "norm");
     }
-    TH1F data_hist = cb.cp().bin({bin}).GetObservedShape();
-    if (rebin_) data_hist = RebinHist(data_hist);
-    // data_hist.Print("range");
-
-    RooRealVar *xvar = ws.var(TString::Format("CMS_x_%s", bin.c_str()));
-    RooDataHist rdh_dat(TString::Format("%s_data_obs", bin.c_str()), "",
-                        RooArgList(*xvar), &data_hist);
-
-    ws.import(rdh_dat);
-
-    cb.cp().bin({bin}).ForEachObs([&](ch::Observation * p) {
-      p->set_shape(nullptr, false);
-      p->set_rate(1.0);
-    });
+    RunSingleObs(cb, ws, bin); 
   }
 }
 
-void CMSHistFuncFactory::RunSingleProc(CombineHarvester& cb, RooWorkspace& ws,
-                                       std::string bin, std::string process) {
+void CMSHistFuncFactory::RunSingleObs(ch::CombineHarvester &cb, RooWorkspace &ws, std::string bin) {
+  if (v_) {
+    std::cout << ">> Processing " << bin << "," << "data_obs" << "\n";
+  }
+  TH1F data_hist = cb.cp().bin({bin}).GetObservedShape();
+  if (rebin_) data_hist = RebinHist(data_hist);
+  // data_hist.Print("range");
+
+  RooRealVar *xvar = ws.var(TString::Format("CMS_x_%s", bin.c_str()));
+  RooDataHist rdh_dat(TString::Format("%s_data_obs", bin.c_str()), "",
+      RooArgList(*xvar), &data_hist);
+
+  ws.import(rdh_dat);
+
+  cb.cp().bin({bin}).ForEachObs([&](ch::Observation * p) {
+      p->set_shape(nullptr, false);
+      p->set_rate(1.0);
+      });
+}
+
+std::string CMSHistFuncFactory::RunSingleProc(CombineHarvester& cb, RooWorkspace& ws,
+                                       std::string bin, std::string process, std::string norm_postfix) {
   using std::vector;
   using std::set;
   using std::string;
@@ -590,7 +597,6 @@ void CMSHistFuncFactory::RunSingleProc(CombineHarvester& cb, RooWorkspace& ws,
     // to add even more terms to this total normalisation, so we give them the option
     // of using some other suffix.
     //! [part6]
-    TString norm_postfix = "norm";
     RooProduct morph_rate(morph_name + "_" + TString(norm_postfix), "",
                           rate_prod);
     //! [part6]
@@ -660,6 +666,7 @@ void CMSHistFuncFactory::RunSingleProc(CombineHarvester& cb, RooWorkspace& ws,
     // 
     //   cb.cp().signals().ExtractPdfs(cb, "htt", "$BIN_$PROCESS_morph");
     //! [part4]
+    return std::string(morph_name);
 }
 
 
