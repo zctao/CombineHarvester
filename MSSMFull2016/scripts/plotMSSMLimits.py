@@ -46,6 +46,10 @@ parser.add_argument(
     '--higgs-injected', action='store_true', help="""Draw with style for higgs injected (blue bands)""")
 parser.add_argument(
     '--plot-exp-points', action='store_true', help="""Plot markers instead of just a line for the expected limit""")
+parser.add_argument(
+    '--do-new-ggH', action='store_true', help="""Plotting t-only and b-only lines""")
+parser.add_argument(
+    '--use-hig-17-020-style', action='store_true', help="""Plot a dashed black line for the expected limit as in hig-17-020""")
 parser.add_argument('--table_vals', help='Amount of values to be written in a table for different masses', default=10)
 args = parser.parse_args()
 
@@ -79,6 +83,14 @@ style_dict_inj = {
             }
         }
 
+style_dict_hig_17_020 = {
+        'style' : {
+            'exp0' : { 'LineColor' : ROOT.kBlack, 'LineStyle' : 2}
+            },
+        'legend' : {
+            }
+        }
+
 style_dict=None
 if args.higgs_bg:
     style_dict = style_dict_bg
@@ -86,6 +98,8 @@ if args.higgs_injected:
     style_dict = style_dict_inj
 if args.plot_exp_points:
     style_dict = style_dict_exponly
+if args.use_hig_17_020_style:
+    style_dict = style_dict_hig_17_020
 
 def DrawAxisHists(pads, axis_hists, def_pad=None):
     for i, pad in enumerate(pads):
@@ -126,6 +140,10 @@ if args.higgs_bg or args.higgs_injected:
     legend = plot.PositionedLegend(0.4, 0.25, 3, 0.015)
 else:
     legend = plot.PositionedLegend(0.3, 0.2, 3, 0.015)
+
+if args.do_new_ggH:
+    legend.SetX1(legend.GetX1() - 0.05)
+    legend.SetY1(legend.GetY1() - 0.08)
 #legend = plot.PositionedLegend(0.45, 0.10, 3, 0.015)
 #plot.Set(legend, NColumns=2)
 
@@ -148,6 +166,10 @@ if args.auto_style is not None:
 
 # Process each input argument
 has_band = False
+
+dummyhist = ROOT.TH1F("dummy", "", 1, 0, 1)
+plot.Set(dummyhist, LineColor=ROOT.kWhite, FillColor=ROOT.kWhite)
+
 for src in args.input:
     splitsrc = src.split(':')
     file = splitsrc[0]
@@ -157,7 +179,7 @@ for src in args.input:
         if axis is None:
             axis = plot.CreateAxisHists(len(pads), graph_sets[-1].values()[0], True)
             DrawAxisHists(pads, axis, pads[0])
-        if args.higgs_bg or args.higgs_injected or args.plot_exp_points:
+        if args.higgs_bg or args.higgs_injected or args.plot_exp_points or args.use_hig_17_020_style:
             plot.StyleLimitBand(graph_sets[-1],overwrite_style_dict=style_dict["style"])
             plot.DrawLimitBand(pads[0], graph_sets[-1], legend=legend,legend_overwrite=style_dict["legend"])
         else:
@@ -168,10 +190,13 @@ for src in args.input:
         pads[0].GetFrame().Draw()
         has_band = True  # useful to know later if we want to do style settings
                          # based on whether or not the expected band has been drawn
+        if args.do_new_ggH:
+            legend.AddEntry(dummyhist, '', 'L')
 
     # limit.json:X => Draw a single graph for entry X in the json file 
     # 'limit.json:X:Title="Blah",LineColor=4,...' =>
     # as before but also apply style options to TGraph
+
     elif len(splitsrc) >= 2:
         settings = {}
         settings['Title'] = src
@@ -223,6 +248,18 @@ plot.FixBothRanges(pads[0], y_min if args.logy else 0, 0.05 if args.logy else 0,
 
 ratio_graph_sets = []
 ratio_graphs = []
+
+if args.do_new_ggH:
+    line = ROOT.TLine()
+    line.SetLineColor(13)
+    line.SetLineStyle(7)
+    line.SetLineWidth(2)
+    line.DrawLine(130, axis[0].GetMinimum(), 130, 70)
+    latex = ROOT.TLatex()
+    latex.SetTextAngle(90)
+    latex.SetTextSize(0.02)
+    latex.SetTextColor(13)
+    latex.DrawLatex(125, 0.001, 'Coupling-dependent region')
 
 if args.ratio_to is not None:
     pads[1].cd()

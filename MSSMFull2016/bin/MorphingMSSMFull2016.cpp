@@ -46,7 +46,7 @@ void To1Bin(T* proc)
 }
 
 //Treatment is different for single bin control regions than for multi-bin cr's
-//Introduce a BinIsSBControlRegion to filter out the single bin cr's and 
+//Introduce a BinIsSBControlRegion to filter out the single bin cr's and
 //Let BinIsControlRegion filter all control regions
 
 bool BinIsSBControlRegion(ch::Object const* obj)
@@ -72,8 +72,6 @@ bool BinIsNotControlRegion(ch::Object const* obj)
 }
 
 
-
-
 int main(int argc, char** argv) {
   // First define the location of the "auxiliaries" directory where we can
   // source the input files containing the datacard shapes
@@ -82,54 +80,61 @@ int main(int argc, char** argv) {
   string output_folder = "mssm_run2";
   // TODO: option to pick up cards from different dirs depending on channel?
   // ^ Something like line 90?
-  string input_folder_em="DESY/";
-  string input_folder_et="Imperial/";
-  string input_folder_mt="Imperial/";
-  string input_folder_tt="Imperial/";
-  string input_folder_zmm="KIT/";
-  string postfix="";
+  string input_folder_em="DESY";
+  string input_folder_et="Imperial";
+  string input_folder_mt="KIT";
+  string input_folder_tt="Vienna";
+  string input_folder_zmm="KIT";
+  string postfix="-mttot";
   bool auto_rebin = false;
   bool manual_rebin = false;
-  bool real_data = false;
-  bool bbH_nlo = false;
+  bool real_data = true;
+  bool bbH_nlo = true;
   int control_region = 0;
   bool check_neg_bins = false;
   bool poisson_bbb = false;
   bool do_w_weighting = true;
   bool zmm_fit = true;
   bool ttbar_fit = true;
-  bool do_jetfakes = false;
+  bool do_jetfakes = true;
   int use_histfunc = 0;
   bool postfit_plot = false;
   bool partial_unblinding = false;
+  bool ggHatNLO = true;
+  bool mod_indep_use_sm = true;  // Use the SM fractions of t:b:i for ggH at NLO
+  string mod_indep_h = "h";
+  string sm_gg_fractions = "shapes/Models/higgs_pt_v3.root";
   string chan;
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
     ("mass,m", po::value<string>(&mass)->default_value(mass))
-    ("input_folder_em", po::value<string>(&input_folder_em)->default_value("DESY"))
-    ("input_folder_et", po::value<string>(&input_folder_et)->default_value("Imperial"))
-    ("input_folder_mt", po::value<string>(&input_folder_mt)->default_value("KIT"))
-    ("input_folder_tt", po::value<string>(&input_folder_tt)->default_value("Vienna"))
-    ("input_folder_zmm", po::value<string>(&input_folder_zmm)->default_value("KIT"))
-    ("postfix", po::value<string>(&postfix)->default_value(""))
-    ("bbH_nlo", po::value<bool>(&bbH_nlo)->default_value(false))
-    ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(false))
-    ("real_data", po::value<bool>(&real_data)->default_value(false))
-    ("manual_rebin", po::value<bool>(&manual_rebin)->default_value(false))
+    ("input_folder_em", po::value<string>(&input_folder_em)->default_value(input_folder_em))
+    ("input_folder_et", po::value<string>(&input_folder_et)->default_value(input_folder_et))
+    ("input_folder_mt", po::value<string>(&input_folder_mt)->default_value(input_folder_mt))
+    ("input_folder_tt", po::value<string>(&input_folder_tt)->default_value(input_folder_tt))
+    ("input_folder_zmm", po::value<string>(&input_folder_zmm)->default_value(input_folder_zmm))
+    ("postfix", po::value<string>(&postfix)->default_value(postfix))
+    ("bbH_nlo", po::value<bool>(&bbH_nlo)->default_value(bbH_nlo))
+    ("auto_rebin", po::value<bool>(&auto_rebin)->default_value(auto_rebin))
+    ("real_data", po::value<bool>(&real_data)->default_value(real_data))
+    ("manual_rebin", po::value<bool>(&manual_rebin)->default_value(manual_rebin))
     ("output_folder", po::value<string>(&output_folder)->default_value("mssm_run2"))
     ("SM125,h", po::value<string>(&SM125)->default_value(SM125))
-    ("control_region", po::value<int>(&control_region)->default_value(0))
-    ("zmm_fit", po::value<bool>(&zmm_fit)->default_value(true))
-    ("ttbar_fit", po::value<bool>(&ttbar_fit)->default_value(false))
-    ("jetfakes", po::value<bool>(&do_jetfakes)->default_value(false))
-    ("postfit_plot",po::value<bool>(&postfit_plot)->default_value(false))
+    ("control_region", po::value<int>(&control_region)->default_value(control_region))
+    ("zmm_fit", po::value<bool>(&zmm_fit)->default_value(zmm_fit))
+    ("ttbar_fit", po::value<bool>(&ttbar_fit)->default_value(ttbar_fit))
+    ("jetfakes", po::value<bool>(&do_jetfakes)->default_value(do_jetfakes))
+    ("postfit_plot",po::value<bool>(&postfit_plot)->default_value(postfit_plot))
     ("channel", po::value<string>(&chan)->default_value("all"))
-    ("check_neg_bins", po::value<bool>(&check_neg_bins)->default_value(false))
-    ("poisson_bbb", po::value<bool>(&poisson_bbb)->default_value(false))
-    ("w_weighting", po::value<bool>(&do_w_weighting)->default_value(false))
+    ("check_neg_bins", po::value<bool>(&check_neg_bins)->default_value(check_neg_bins))
+    ("poisson_bbb", po::value<bool>(&poisson_bbb)->default_value(poisson_bbb))
+    ("w_weighting", po::value<bool>(&do_w_weighting)->default_value(do_w_weighting))
     ("use_histfunc", po::value<int>(&use_histfunc)->default_value(0))
-    ("partial_unblinding", po::value<bool>(&partial_unblinding)->default_value(false));
+    ("partial_unblinding", po::value<bool>(&partial_unblinding)->default_value(partial_unblinding))
+    ("ggHatNLO", po::value<bool>(&ggHatNLO)->default_value(ggHatNLO))
+    ("mod_indep_use_sm", po::value<bool>(&mod_indep_use_sm)->default_value(mod_indep_use_sm))
+    ("mod_indep_h", po::value<string>(&mod_indep_h)->default_value(mod_indep_h));
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
 
@@ -291,13 +296,39 @@ int main(int argc, char** argv) {
     {"ggH", {"ggh_htautau", "ggH_Htautau", "ggA_Atautau"}},
     {"bbH", {"bbh_htautau", "bbH_Htautau", "bbA_Atautau"}}
   };
-  if(mass=="MH"){
+
+  // List the mappings from the NLO gluon fusion process names to the histogram
+  // names in the shape files
+  map<string, string> gg_shapes = {
+    {"gght_htautau", "ggh_t"}, {"gghb_htautau", "ggh_b"}, {"gghi_htautau", "ggh_i"},
+    {"ggHt_Htautau", "ggH_t"}, {"ggHb_Htautau", "ggH_b"}, {"ggHi_Htautau", "ggH_i"},
+    {"ggAt_Atautau", "ggA_t"}, {"ggAb_Atautau", "ggA_b"}, {"ggAi_Atautau", "ggA_i"},
+    {"ggHt", "gg"+mod_indep_h+"_t"},
+    {"ggHb", "gg"+mod_indep_h+"_b"},
+    {"ggHi", "gg"+mod_indep_h+"_i"},
+    {"ggH", "ggH"}  // old LO case
+  };
+
+  if(ggHatNLO){
     signal_types = {
-      {"ggH", {"ggH"}},
-      {"bbH", {"bbH"}}
+      {"ggH", {"gght_htautau", "gghb_htautau", "gghi_htautau", "ggHt_Htautau", "ggHb_Htautau", "ggHi_Htautau", "ggAt_Atautau", "ggAb_Atautau", "ggAi_Atautau"}},
+      {"bbH", {"bbh_htautau", "bbH_Htautau", "bbA_Atautau"}}
     };
   }
-    vector<string> sig_procs = {"ggH","bbH"};
+  if(mass=="MH"){
+    if(ggHatNLO){
+      signal_types = {
+        {"ggH", {"ggHt", "ggHb", "ggHi"}},
+        {"bbH", {"bbH"}}
+      };
+    }else{
+      signal_types = {
+        {"ggH", {"ggH"}},
+        {"bbH", {"bbH"}}
+      };
+    }
+  }
+  vector<string> sig_procs = {"ggH","bbH"};
   for(auto chn : chns){
     cb.AddObservations({"*"}, {"htt"}, {"13TeV"}, {chn}, cats[chn+"_13TeV"]);
 
@@ -321,7 +352,7 @@ int main(int argc, char** argv) {
 
   ch::AddMSSMRun2Systematics(cb, control_region, zmm_fit, ttbar_fit);
   //! [part7]
-  for (string chn:chns){
+  for (string chn : chns) {
     std::string chn_label = chn;
     if(chn==std::string("ttbar")) chn_label = "em";
     cb.cp().channel({chn}).backgrounds().ExtractShapes(
@@ -332,10 +363,12 @@ int main(int argc, char** argv) {
          input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
          "$BIN/$PROCESS",
          "$BIN/$PROCESS_$SYSTEMATIC");
-    cb.cp().channel({chn}).process(signal_types["ggH"]).ExtractShapes(
-        input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
-        "$BIN/ggH$MASS",
-        "$BIN/ggH$MASS_$SYSTEMATIC");
+    for (auto ggH_type : signal_types["ggH"]) {
+      cb.cp().channel({chn}).process({ggH_type}).ExtractShapes(
+          input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
+          "$BIN/"+gg_shapes.at(ggH_type)+"$MASS",
+          "$BIN/"+gg_shapes.at(ggH_type)+"$MASS_$SYSTEMATIC");
+    }
     cb.cp().channel({chn}).process(signal_types["bbH"]).ExtractShapes(
         input_dir[chn] + "htt_"+chn_label+".inputs-mssm-13TeV"+postfix+".root",
         "$BIN/bbH$MASS",
@@ -346,9 +379,9 @@ int main(int argc, char** argv) {
  //Now delete processes with 0 yield
  cb.FilterProcs([&](ch::Process *p) {
   bool null_yield = !(p->rate() > 0. || BinIsSBControlRegion(p));
-  if (null_yield){
+  if (null_yield && !p->signal()){
      std::cout << "[Null yield] Removing process with null yield: \n ";
-     std::cout << ch::Process::PrintHeader << *p << "\n"; 
+     std::cout << ch::Process::PrintHeader << *p << "\n";
      cb.FilterSysts([&](ch::Systematic *s){
        bool remove_syst = (MatchingProcess(*p,*s));
        return remove_syst;
@@ -357,10 +390,6 @@ int main(int argc, char** argv) {
   return null_yield;
  });
 
-    //Scaling QCD in em btag by 1.45/2.2 
-   /*cb.cp().process({"QCD"}).channel({"em"}).bin_id({9}).ForEachProc([&](ch::Process *proc){
-         proc->set_rate(proc->rate()*(1.45/2.2));
-   });*/
 
   if(SM125!=string("")) {
      cb.cp().process(SM_procs).ForEachProc([&](ch::Process * proc) {
@@ -491,10 +520,11 @@ int main(int argc, char** argv) {
   // }
 
   // At this point we can fix the negative bins
+  std::cout << "Fixing negative bins\n";
   cb.ForEachProc([](ch::Process *p) {
     if (ch::HasNegativeBins(p->shape())) {
-      std::cout << "[Negative bins] Fixing negative bins for " << p->bin()
-                << "," << p->process() << "\n";
+      // std::cout << "[Negative bins] Fixing negative bins for " << p->bin()
+      //           << "," << p->process() << "\n";
       // std::cout << "[Negative bins] Before:\n";
       // p->shape()->Print("range");
       auto newhist = p->ClonedShape();
@@ -510,8 +540,8 @@ int main(int argc, char** argv) {
   cb.ForEachSyst([](ch::Systematic *s) {
     if (s->type().find("shape") == std::string::npos) return;
     if (ch::HasNegativeBins(s->shape_u()) || ch::HasNegativeBins(s->shape_d())) {
-      std::cout << "[Negative bins] Fixing negative bins for syst" << s->bin()
-                << "," << s->process() << "," << s->name() << "\n";
+      // std::cout << "[Negative bins] Fixing negative bins for syst" << s->bin()
+      //           << "," << s->process() << "," << s->name() << "\n";
       // std::cout << "[Negative bins] Before:\n";
       // s->shape_u()->Print("range");
       // s->shape_d()->Print("range");
@@ -598,29 +628,70 @@ int main(int argc, char** argv) {
 
   bool do_morphing = true;
   map<string, RooAbsReal *> mass_var = {
-    {"ggh_htautau", &mh}, {"ggH_Htautau", &mH}, {"ggA_Atautau", &mA},
+    {"ggh_htautau", &mh}, {"ggH_Htautau", &mH}, {"ggA_Atautau", &mA}, {"gght_htautau", &mh}, {"ggHt_Htautau", &mH}, {"ggAt_Atautau", &mA}, {"gghb_htautau", &mh}, {"ggHb_Htautau", &mH}, {"ggAb_Atautau", &mA}, {"gghi_htautau", &mh}, {"ggHi_Htautau", &mH}, {"ggAi_Atautau", &mA},
     {"bbh_htautau", &mh}, {"bbH_Htautau", &mH}, {"bbA_Atautau", &mA}
   };
   if(mass=="MH"){
     mass_var = {
-      {"ggH", &mA},
+      {"ggH", &mA}, {"ggHt", &mA}, {"ggHb", &mA}, {"ggHi", &mA},
       {"bbH", &mA}
     };
   }
-  if (do_morphing && !use_histfunc) {
+  if (do_morphing) {
+    std::string norm = "norm";
+    // For model-independent NLO we will add an extra normalisation term
+    if (mass == "MH" && ggHatNLO) {
+      if (mod_indep_use_sm) {
+        TFile f_sm(sm_gg_fractions.c_str());
+        RooWorkspace *w_sm = (RooWorkspace*)f_sm.Get("w");
+        w_sm->var(("m"+mod_indep_h).c_str())->SetName("MH");
+        RooAbsReal *t_frac = w_sm->function(("gg" + mod_indep_h + "_t_SM_frac").c_str());
+        RooAbsReal *b_frac = w_sm->function(("gg" + mod_indep_h + "_b_SM_frac").c_str());
+        RooAbsReal *i_frac = w_sm->function(("gg" + mod_indep_h + "_i_SM_frac").c_str());
+        t_frac->SetName("ggHt_frac");
+        b_frac->SetName("ggHb_frac");
+        i_frac->SetName("ggHi_frac");
+        ws.import(mA);
+        ws.import(*t_frac, RooFit::RecycleConflictNodes());
+        ws.import(*b_frac, RooFit::RecycleConflictNodes());
+        ws.import(*i_frac, RooFit::RecycleConflictNodes());
+        f_sm.Close();
+      } else {
+        ws.factory("ggHt_frac[1.0,-10,10]");
+        ws.factory("ggHb_frac[0.0,-10,10]");
+        ws.factory("expr::ggHi_frac(\"1-@0-@1\",ggHt_frac,ggHb_frac)");
+        ws.var("ggHt_frac")->setConstant(true);
+        ws.var("ggHb_frac")->setConstant(true);
+      }
+    }
+    ch::CMSHistFuncFactory hf_factory;
+    hf_factory.SetHorizontalMorphingVariable(mass_var);
     auto bins = cb.bin_set();
     for (auto b : bins) {
       auto procs = cb.cp().bin({b}).process(ch::JoinStr({signal_types["ggH"], signal_types["bbH"]})).process_set();
+      if (use_histfunc) procs = cb.cp().bin({b}).process_set();
       for (auto p : procs) {
-        ch::BuildRooMorphing(ws, cb, b, p, *(mass_var[p]),
-                             "norm", true, false, false, &demo);
+        std::string norm = "norm";
+        if (mass == "MH" && ggHatNLO && ch::contains(signal_types["ggH"], p)) {
+          norm = "prenorm";
+        }
+        std::string pdf_name;
+        if (!use_histfunc) {
+          pdf_name = ch::BuildRooMorphing(
+            ws, cb, b, p, *(mass_var[p]), norm, true, false, false, &demo);
+        } else {
+          pdf_name = hf_factory.RunSingleProc(cb, ws, b, p, norm);
+        }
+        if (mass == "MH" && ggHatNLO && ch::contains(signal_types["ggH"], p)) {
+          ws.factory(TString::Format("expr::%s_norm('@0*@1',%s, %s_frac)",
+                                     pdf_name.c_str(),
+                                     (pdf_name + "_" + norm).c_str(), p.c_str()));
+        }
+      }
+      if (use_histfunc) {
+        hf_factory.RunSingleObs(cb, ws, b);
       }
     }
-  }
-  if (do_morphing && use_histfunc) {
-    ch::CMSHistFuncFactory hf_factory;
-    hf_factory.SetHorizontalMorphingVariable(mass_var);
-    hf_factory.Run(cb, ws);
   }
 
   demo.Close();
