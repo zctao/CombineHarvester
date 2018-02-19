@@ -21,6 +21,6 @@ A new full release area can be set up and compiled in the following steps:
     cmsenv
     git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
     # IMPORTANT: Checkout the recommended tag on the link above
-    git clone https://github.com/cms-analysis/CombineHarvester.git CombineHarvester
+    git clone https://github.com/HEP-KBFI/CombineHarvester CombineHarvester
     scram b
 
