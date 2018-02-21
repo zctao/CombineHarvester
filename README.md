@@ -1,9 +1,3 @@
-# CombineHarvester
-
-Full documentation: http://cms-analysis.github.io/CombineHarvester
-
-
-
 ## ------- PLEASE FOLLOW THESE INSTRUCTIONS FOR INSTALLATION ---------
 cmsrel CMSSW_7_4_7
 
@@ -33,6 +27,10 @@ scram b
 
 
 ### XXXXXXXXX INSTRUCTIONS GIVEN BELOW ARE OBSOLETE XXXXXXXXX #######
+# CombineHarvester
+
+Full documentation: http://cms-analysis.github.io/CombineHarvester
+
 ## Quick start
 
 This pacakge requires HiggsAnalysis/CombinedLimit to be in your local CMSSW area. We follow the release recommendations of the combine developers which can be found [here](https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideHiggsAnalysisCombinedLimit#ROOT6_SLC6_release_CMSSW_7_4_X). The CombineHarvester framework is only compatible with the CMSSW 7_X_Y series releases, though both the ROOT5 and ROOT6 branches of combine are supported.
