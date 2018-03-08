@@ -11,7 +11,7 @@ cd HiggsAnalysis/CombinedLimit/
 
 git fetch origin
 
-git checkout v7.0.6
+git checkout v7.0.7
 
 scramv1 b clean; scramv1 b
 
