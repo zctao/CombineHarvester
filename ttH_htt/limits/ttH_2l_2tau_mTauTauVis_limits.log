@@ -1,0 +1,18 @@
+ <<< Combine >>> 
+>>> including systematics
+>>> method used is AsymptoticLimits
+>>> random number generator seed is 123456
+Computing results starting from expected outcome (a-priori)
+Constraints of type SimpleGaussianConstraint: 46
+Constraints of type SimpleGaussianConstraint: 46
+Constraints of type SimpleGaussianConstraint: 46
+
+ -- AsymptoticLimits ( CLs ) --
+Observed Limit: r < 4.7792
+Expected  2.5%: r < 2.0544
+Expected 16.0%: r < 2.9918
+Expected 50.0%: r < 4.7812
+Expected 84.0%: r < 7.9830
+Expected 97.5%: r < 13.0537
+
+Done in 0.01 min (cpu), 0.01 min (real)
