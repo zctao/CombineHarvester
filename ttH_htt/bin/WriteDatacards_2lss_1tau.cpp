@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
   //string aux_shapes = "/afs/cern.ch/user/v/veelken/public/HIG15008_datacards/";
   string aux_shapes = "/home/veelken/public/HIG15008_datacards/";
   if ( input_file.find_first_of("/") == 0 ) aux_shapes = ""; // set aux_shapes directory to zero in case full path to input file is given on command line
- 
+
   // Create an empty CombineHarvester instance that will hold all of the
   // datacard configuration and histograms etc.
   ch::CombineHarvester cb;
@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
   //    .AddSyst(cb, "CMS_ttHl_TT", "lnN", SystMap<>::init(2.0));
   cb.cp().process({"EWK"})
       .AddSyst(cb, "CMS_ttHl_EWK_4j", "lnN", SystMap<>::init(2.0));
-  
+
   cb.cp().process({"Rares"})
       .AddSyst(cb, "CMS_ttHl_Rares", "lnN", SystMap<>::init(1.5));
 
@@ -153,18 +153,18 @@ int main(int argc, char** argv) {
   //cb.cp().process({"fakes_data"})
   //    .AddSyst(cb, "CMS_ttHl_FRe_shape_2lss_corr1", "shape", SystMap<>::init(1.0));
   //cb.cp().process({"fakes_data"})
-  //    .AddSyst(cb, "CMS_ttHl_FRe_shape_2lss_anticorr1", "shape", SystMap<>::init(1.0));  
+  //    .AddSyst(cb, "CMS_ttHl_FRe_shape_2lss_anticorr1", "shape", SystMap<>::init(1.0));
 
 
   //cb.cp().process({"fakes_data"})
   //    .AddSyst(cb, "CMS_ttHl_FRm_shape_2lss_corr1", "shape", SystMap<>::init(1.0));
   //cb.cp().process({"fakes_data"})
-  //    .AddSyst(cb, "CMS_ttHl_FRm_shape_2lss_anticorr1", "shape", SystMap<>::init(1.0)); 
+  //    .AddSyst(cb, "CMS_ttHl_FRm_shape_2lss_anticorr1", "shape", SystMap<>::init(1.0));
 
 
   cb.cp().process({"flips_data"})
       .AddSyst(cb, "CMS_ttHl_QF", "lnN", SystMap<>::init(1.3));
-  
+
   cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
       .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.02));
   cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
@@ -198,17 +198,17 @@ int main(int argc, char** argv) {
   //! [part7]
   cb.cp().backgrounds().ExtractShapes(
       aux_shapes + input_file,
-      "x_$PROCESS",
-      "x_$PROCESS_$SYSTEMATIC");
+      "$PROCESS",
+      "$PROCESS_$SYSTEMATIC");
   cb.cp().signals().ExtractShapes(
       aux_shapes + input_file,
-      "x_$PROCESS",
-      "x_$PROCESS_$SYSTEMATIC");
+      "$PROCESS",
+      "$PROCESS_$SYSTEMATIC");
   //! [part7]
 
   // CV: scale yield of all signal and background processes by lumi/2.3,
   //     with 2.3 corresponding to integrated luminosity of 2015 dataset
-  if ( lumi > 0. ) {  
+  if ( lumi > 0. ) {
     std::cout << "scaling signal and background yields to L=" << lumi << "fb^-1 @ 13 TeV." << std::endl;
     cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "WZ", "Rares", "fakes_data", "flips_data"}})).ForEachProc([&](ch::Process* proc) {
       proc->set_rate(proc->rate()*lumi/2.3);
@@ -249,9 +249,8 @@ int main(int argc, char** argv) {
     //cb.cp().bin({b}).mass({"*"}).WriteDatacard(
     //	b + ".txt", output);
     cb.cp().bin({b}).mass({"*"}).WriteDatacard(
-      TString(output_file.data()).ReplaceAll(".root", ".txt").Data(), output);				       
+      TString(output_file.data()).ReplaceAll(".root", ".txt").Data(), output);
   }
   //! [part9]
 
 }
-
