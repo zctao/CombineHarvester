@@ -1,7 +1,7 @@
 ## ------- PLEASE FOLLOW THESE INSTRUCTIONS FOR INSTALLATION ---------
-cmsrel CMSSW_7_4_7
+cmsrel CMSSW_8_1_0
 
-cd CMSSW_7_4_7/src/
+cd CMSSW_8_1_0/src/
 
 cmsenv
 
@@ -11,16 +11,15 @@ cd HiggsAnalysis/CombinedLimit/
 
 git fetch origin
 
-git checkout v6.3.1
+git checkout v7.0.7
 
-scramv1 b clean ; scramv1 b
+scramv1 b clean; scramv1 b
 
 cd $CMSSW_BASE/src
 
 git clone https://github.com/HEP-KBFI/CombineHarvester CombineHarvester
 
-scram b 
-
+scram b
 ## -------------------------------------------------------------------- ##
 
 
