@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 
   std::string input_file, output_file;
   double lumi = -1.;
-  bool add_shape_sys = true;
+  bool add_shape_sys = false;
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
@@ -100,12 +100,13 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "pdf_Higgs", "lnN", SystMap<>::init(1.036));
   cb.cp().process(sig_procs)
     .AddSyst(cb, "QCDscale_ttH", "lnN", SystMapAsymm<>::init(0.915, 1.058));
-  //if ( add_shape_sys ) {
-  //  cb.cp().process(sig_procs)
-  //    .AddSyst(cb, "CMS_ttHl_thu_shape_ttH_x1", "shape", SystMap<>::init(1.0));
-  //  cb.cp().process(sig_procs)
-  //    .AddSyst(cb, "CMS_ttHl_thu_shape_ttH_y1", "shape", SystMap<>::init(1.0));
-  //}
+  /*
+  if ( add_shape_sys ) {
+    cb.cp().process(sig_procs)
+      .AddSyst(cb, "CMS_ttHl_thu_shape_ttH_x1", "shape", SystMap<>::init(1.0));
+    cb.cp().process(sig_procs)
+      .AddSyst(cb, "CMS_ttHl_thu_shape_ttH_y1", "shape", SystMap<>::init(1.0));
+  }*/
 
   // CV: PDF and scale uncertainties for tt+jets background taken from
   //      https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
@@ -118,23 +119,25 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "pdf_qqbar", "lnN", SystMap<>::init(1.04));
   cb.cp().process({"TTW"})
       .AddSyst(cb, "QCDscale_ttW", "lnN", SystMap<>::init(1.12));
-  //if ( add_shape_sys ) {
-  //  cb.cp().process({"TTW"})
-  //    .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_x1", "shape", SystMap<>::init(1.0));
-  //  cb.cp().process({"TTW"})
-  //    .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_y1", "shape", SystMap<>::init(1.0));
-  //}
+  /*
+  if ( add_shape_sys ) {
+    cb.cp().process({"TTW"})
+      .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_x1", "shape", SystMap<>::init(1.0));
+    cb.cp().process({"TTW"})
+      .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_y1", "shape", SystMap<>::init(1.0));
+  }*/
 
   cb.cp().process({"TTZ"})
       .AddSyst(cb, "pdf_gg", "lnN", SystMap<>::init(0.966));
   cb.cp().process({"TTZ"})
       .AddSyst(cb, "QCDscale_ttZ", "lnN", SystMap<>::init(1.11));
-  //if ( add_shape_sys ) {
-  //  cb.cp().process({"TTZ"})
-  //    .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_x1", "shape", SystMap<>::init(1.0));
-  //  cb.cp().process({"TTZ"})
-  //    .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_y1", "shape", SystMap<>::init(1.0));
-  //}
+  /*
+  if ( add_shape_sys ) {
+    cb.cp().process({"TTZ"})
+      .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_x1", "shape", SystMap<>::init(1.0));
+    cb.cp().process({"TTZ"})
+      .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_y1", "shape", SystMap<>::init(1.0));
+  }*/
 
   cb.cp().process({"EWK"})
       .AddSyst(cb, "CMS_ttHl_EWK", "lnN", SystMap<>::init(1.5));
@@ -167,7 +170,6 @@ int main(int argc, char** argv) {
   if ( add_shape_sys ) {
     cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
         .AddSyst(cb, "CMS_ttHl_JES", "shape", SystMap<>::init(1.0));
-
     cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
         .AddSyst(cb, "CMS_ttHl_tauES", "shape", SystMap<>::init(1.0));
   }

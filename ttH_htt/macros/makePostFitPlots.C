@@ -193,8 +193,8 @@ TH1* divideHistogramByBinWidth(TH1* histogram)
     if ( binContent < 0. ) binContent = 0.;
     double binError = histogram->GetBinError(iBin);
     double binWidth = xAxis->GetBinWidth(iBin);
-    histogramDensity->SetBinContent(iBin, binContent/binWidth);
-    histogramDensity->SetBinError(iBin, binError/binWidth);
+    histogramDensity->SetBinContent(iBin, binContent); ///binWidth
+    histogramDensity->SetBinError(iBin, binError); ///binWidth
 		if ( binContent <= 0. ) {histogramDensity->SetBinError(iBin, 0.);}
   }
   return histogramDensity;
@@ -245,7 +245,8 @@ void addLabel_CMS_preliminary(double x0, double y0, double x0_luminosity)
   label_preliminary->Draw();
 
   TPaveText* label_luminosity = new TPaveText(x0_luminosity, y0 + 0.0050, x0_luminosity + 0.1900, y0 + 0.0550, "NDC");
-  label_luminosity->AddText("35.9 fb^{-1} (13 TeV)");
+  //label_luminosity->AddText("35.9 fb^{-1} (13 TeV)");
+  label_luminosity->AddText("41.53 fb^{-1} (13 TeV)");
   label_luminosity->SetTextAlign(13);
   label_luminosity->SetTextSize(0.050);
   label_luminosity->SetTextColor(1);
@@ -279,6 +280,8 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
 	      TH1* histogram_EWK,
 	      TH1* histogram_Rares,
 	      TH1* histogram_fakes,
+	      TH1* histogram_Flips,
+	      TH1* histogram_Conv,
 	      TH1* histogramSum_mc,
 	      TH1* histogramErr_mc,
 	      const std::string& xAxisTitle,
@@ -286,13 +289,17 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
 				double yMin, double yMax,
 	      bool showLegend,
 	      const std::string& label,
+				std::string channel,
 	      const std::string& outputFileName,
-	      bool useLogScale
+	      bool useLogScale,
+				bool hasFlips,
+				bool hasConv
 			)
 
 {
 
   ////////////////
+	std::cout << "entered functions "<< std::endl;
   TH1* histogram_data_density = 0;
   if ( histogram_data ) {
     histogram_data_density = divideHistogramByBinWidth(histogram_data);
@@ -303,6 +310,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   histogram_data_density->SetLineColor(1);
   histogram_data_density->SetLineWidth(1);
   histogram_data_density->SetLineStyle(1);
+	std::cout << "read first histogram "<< std::endl;
 
   TH1* histogram_ttH_density = 0;
   if ( histogram_ttH ) {
@@ -360,12 +368,39 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   histogram_fakes_density->SetLineColor(1);
   histogram_fakes_density->SetLineWidth(1);
 
+  std::cout << "test read flips "<< std::endl;
+	TH1* histogram_Flips_density = 0;
+	if ( hasFlips ) {
+	  if ( histogram_Flips ) {
+			std::cout << "test read flips "<< std::endl;
+	    if ( histogram_data ) checkCompatibleBinning(histogram_Flips, histogram_data);
+	    histogram_Flips_density = divideHistogramByBinWidth(histogram_Flips);
+	  }
+	  histogram_Flips_density->SetFillColor(1);
+	  histogram_Flips_density->SetFillStyle(3004);
+	  histogram_Flips_density->SetLineColor(1);
+	  histogram_Flips_density->SetLineWidth(1);
+  }
+
+  std::cout << "test read conversions "<< std::endl;
+	TH1* histogram_Conv_density = 0;
+	if ( hasConv ) {
+	  if ( histogram_Conv) {
+	    if ( histogram_data ) checkCompatibleBinning(histogram_Conv, histogram_data);
+	    histogram_Conv_density = divideHistogramByBinWidth(histogram_Conv);
+	  }
+	  histogram_Conv_density->SetFillColor(5);
+	  //histogram_Conv_density->SetFillStyle(3007);
+	  histogram_Conv_density->SetLineColor(1);
+	  histogram_Conv_density->SetLineWidth(1);
+  }
+
   TH1* histogramSum_mc_density = 0;
   if ( histogramSum_mc ) {
     if ( histogram_data ) checkCompatibleBinning(histogramSum_mc, histogram_data);
     histogramSum_mc_density = divideHistogramByBinWidth(histogramSum_mc);
   }
-  std::cout << "histogramSum_mc_density = " << histogramSum_mc_density << std::endl;
+  std::cout << "histogramSum_mc_density test = " << histogramSum_mc_density << std::endl;
   dumpHistogram(histogramSum_mc_density);
 
   TH1* histogramErr_mc_density = 0;
@@ -402,6 +437,8 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
 
   THStack* histogramStack_mc = new THStack();
   histogramStack_mc->Add(histogram_fakes_density);
+	if (hasFlips) histogramStack_mc->Add(histogram_Flips_density);
+	if (hasConv) histogramStack_mc->Add(histogram_Conv_density);
   histogramStack_mc->Add(histogram_Rares_density);
   histogramStack_mc->Add(histogram_EWK_density);
   histogramStack_mc->Add(histogram_ttW_density);
@@ -432,21 +469,45 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   histogram_ref->Draw("axis");
   // CV: calling THStack::Draw() causes segmentation violation ?!
   //histogramStack_mc->Draw("histsame");
+	std::string testchannel  = "1l_2tau";
+	std::string testchannel2 = "2lss_1tau";
+  if ( channel == testchannel ) {
+	  // CV: draw fakes background on top, as it is by far dominant
+	  //     and would prevent the ttH signal and other backgrounds to be seen otherwise !!
+		if ( channel == testchannel ) {
+	  histogram_fakes_density->Add(histogram_ttH_density);
+	  histogram_fakes_density->Add(histogram_ttZ_density);
+	  histogram_fakes_density->Add(histogram_ttW_density);
+	  histogram_fakes_density->Add(histogram_EWK_density);
+	  histogram_fakes_density->Add(histogram_Rares_density);
+		if ( hasConv ) histogram_fakes_density->Add(histogram_Conv_density);
+		if ( hasFlips ) histogram_fakes_density->Add(histogram_Flips_density);
+	  }
+		//if ( channel != testchannel ) histogram_fakes_density->Add(histogram_fakes_density);
+	  TH1* histogram_fakes_density_cloned = (TH1*)histogram_fakes_density->Clone();
+	  histogram_fakes_density_cloned->SetFillColor(10);
+	  histogram_fakes_density_cloned->SetFillStyle(1001);
+		histogram_fakes_density_cloned->SetMaximum(yMax);
+		histogram_fakes_density_cloned->SetMinimum(yMin);
+	  histogram_fakes_density_cloned->Draw("histsame");
+	  histogram_fakes_density->Draw("histsame");
+  } /*else {
+		TH1* histogram_fakes_density_cloned = (TH1*)histogram_fakes_density->Clone();
+		histogram_fakes_density_cloned->SetFillColor(10);
+		histogram_fakes_density_cloned->SetFillStyle(1001);
+		histogram_fakes_density_cloned->SetMaximum(yMax);
+		histogram_fakes_density_cloned->SetMinimum(yMin);
+		histogram_fakes_density_cloned->Draw("histsame");
+		histogram_fakes_density->Draw("histsame");
+		histogram_fakes_density->Add(histogram_ttH_density);
+		histogram_fakes_density->Add(histogram_ttZ_density);
+		histogram_fakes_density->Add(histogram_ttW_density);
+		histogram_fakes_density->Add(histogram_EWK_density);
+		histogram_fakes_density->Add(histogram_Rares_density);
 
-  // CV: draw fakes background on top, as it is by far dominant
-  //     and would prevent the ttH signal and other backgrounds to be seen otherwise !!
-  histogram_fakes_density->Add(histogram_ttH_density);
-  histogram_fakes_density->Add(histogram_ttZ_density);
-  histogram_fakes_density->Add(histogram_ttW_density);
-  histogram_fakes_density->Add(histogram_EWK_density);
-  histogram_fakes_density->Add(histogram_Rares_density);
-  TH1* histogram_fakes_density_cloned = (TH1*)histogram_fakes_density->Clone();
-  histogram_fakes_density_cloned->SetFillColor(10);
-  histogram_fakes_density_cloned->SetFillStyle(1001);
-	histogram_fakes_density_cloned->SetMaximum(yMax);
-	histogram_fakes_density_cloned->SetMinimum(yMin);
-  histogram_fakes_density_cloned->Draw("histsame");
-  histogram_fakes_density->Draw("histsame");
+	}*/
+
+// if (histogram_Conv.Integral() > 0)
 
   std::cout << "histogram_fakes_density = " << histogram_fakes_density << ":" << std::endl;
   dumpHistogram(histogram_fakes_density);
@@ -455,32 +516,62 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   histogram_ttH_density->Add(histogram_ttW_density);
   histogram_ttH_density->Add(histogram_EWK_density);
   histogram_ttH_density->Add(histogram_Rares_density);
-  //histogram_ttH_density->Add(histogram_fakes_density);
+	if ( hasConv ) histogram_ttH_density->Add(histogram_Conv_density);
+	if ( hasFlips ) histogram_ttH_density->Add(histogram_Flips_density);
+  if ( channel != testchannel ) histogram_ttH_density->Add(histogram_fakes_density);
   histogram_ttH_density->Draw("histsame");
+
 
   histogram_ttZ_density->Add(histogram_ttW_density);
   histogram_ttZ_density->Add(histogram_EWK_density);
   histogram_ttZ_density->Add(histogram_Rares_density);
-  //histogram_ttZ_density->Add(histogram_fakes_density);
+	if ( hasConv ) histogram_ttZ_density->Add(histogram_Conv_density);
+	if ( hasFlips ) histogram_ttZ_density->Add(histogram_Flips_density);
+  if ( channel != testchannel ) histogram_ttZ_density->Add(histogram_fakes_density);
   histogram_ttZ_density->Draw("histsame");
+std::cout << "here 4 " <<  std::endl;
 
   histogram_ttW_density->Add(histogram_EWK_density);
   histogram_ttW_density->Add(histogram_Rares_density);
-  //histogram_ttW_density->Add(histogram_fakes_density);
+	if ( hasConv ) histogram_ttW_density->Add(histogram_Conv_density);
+	if ( hasFlips ) histogram_ttW_density->Add(histogram_Flips_density);
+  if ( channel != testchannel ) histogram_ttW_density->Add(histogram_fakes_density);
   histogram_ttW_density->Draw("histsame");
 
   histogram_EWK_density->Add(histogram_Rares_density);
-  //histogram_EWK_density->Add(histogram_fakes_density);
+	if ( hasConv ) histogram_EWK_density->Add(histogram_Conv_density);
+	if ( hasFlips ) histogram_EWK_density->Add(histogram_Flips_density);
+  if ( channel != testchannel ) histogram_EWK_density->Add(histogram_fakes_density);
   histogram_EWK_density->Draw("histsame");
 
-  //histogram_Rares_density->Add(histogram_fakes_density);
+	if ( hasConv ) histogram_Rares_density->Add(histogram_Conv_density);
+	if ( hasFlips ) histogram_Rares_density->Add(histogram_Flips_density);
+  if ( channel != testchannel ) histogram_Rares_density->Add(histogram_fakes_density);
   histogram_Rares_density->Draw("histsame");
 
-  //TH1* histogram_fakes_density_cloned = (TH1*)histogram_fakes_density->Clone();
-  //histogram_fakes_density_cloned->SetFillColor(10);
-  //histogram_fakes_density_cloned->SetFillStyle(1001);
-  //histogram_fakes_density_cloned->Draw("histsame");
-  //histogram_fakes_density->Draw("histsame");
+	if ( hasConv ) {
+		//histogram_Conv_density->Add(histogram_Conv_density);
+		if ( hasFlips ) histogram_Conv_density->Add(histogram_Flips_density);
+		if ( channel != testchannel ) histogram_Conv_density->Add(histogram_fakes_density);
+	  histogram_Conv_density->Draw("histsame");
+  }
+
+	if ( hasFlips ) {
+		if ( channel != testchannel ) histogram_Flips_density->Add(histogram_fakes_density);
+		TH1* histogram_Flips_density_cloned = (TH1*) histogram_Flips_density->Clone();
+	  histogram_Flips_density_cloned->SetFillColor(10);
+	  histogram_Flips_density_cloned->SetFillStyle(1001);
+	  histogram_Flips_density_cloned->Draw("histsame");
+		histogram_Flips_density->Draw("histsame");
+	}
+
+  if ( channel != testchannel ) {
+		TH1* histogram_fakes_density_cloned = (TH1*)histogram_fakes_density->Clone();
+	  histogram_fakes_density_cloned->SetFillColor(10);
+	  histogram_fakes_density_cloned->SetFillStyle(1001);
+	  histogram_fakes_density_cloned->Draw("histsame");
+	  histogram_fakes_density->Draw("histsame");
+	}
 
   if ( histogramErr_mc_density ) {
     histogramErr_mc_density->Draw("e2same");
@@ -493,13 +584,16 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
 
   histogram_ref->Draw("axissame");
 
-  double legend_y0 = 0.6950;
+  double legend_y0 = 0.670;
+	double legend_y01 = 0.670;
+  if ( channel == testchannel2 ) legend_y01 = 0.55;
   if ( showLegend ) {
     TLegend* legend1 = new TLegend(0.2600, legend_y0, 0.5350, 0.9250, NULL, "brNDC");
     legend1->SetFillStyle(0);
     legend1->SetBorderSize(0);
     legend1->SetFillColor(10);
     legend1->SetTextSize(0.050);
+		legend1->SetHeader(channel.c_str());
     TH1* histogram_data_forLegend = (TH1*)histogram_data_density->Clone();
     histogram_data_forLegend->SetMarkerSize(2);
     legend1->AddEntry(histogram_data_forLegend, "Observed", "p");
@@ -507,14 +601,16 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
     legend1->AddEntry(histogram_ttZ_density, "t#bar{t}Z", "f");
     legend1->AddEntry(histogram_ttW_density, "t#bar{t}W", "f");
     legend1->Draw();
-    TLegend* legend2 = new TLegend(0.6600, legend_y0, 0.9350, 0.9250, NULL, "brNDC");
+    TLegend* legend2 = new TLegend(0.6600, legend_y01, 0.9350, 0.9250, NULL, "brNDC");
     legend2->SetFillStyle(0);
     legend2->SetBorderSize(0);
     legend2->SetFillColor(10);
         legend2->SetTextSize(0.050);
     legend2->AddEntry(histogram_EWK_density, "Electroweak", "f");
     legend2->AddEntry(histogram_Rares_density, "Rares", "f");
+		if ( hasConv ) legend2->AddEntry(histogram_Conv_density, "Conversions", "f");
     legend2->AddEntry(histogram_fakes_density, "Fakes", "f");
+		if ( hasFlips ) legend2->AddEntry(histogram_Flips_density, "Flips", "f");
     if ( histogramErr_mc ) legend2->AddEntry(histogramErr_mc_density, "Uncertainty", "f");
     legend2->Draw();
   }
@@ -652,10 +748,6 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   outputFileName_plot.append(label.data());
   canvas->Print(std::string(outputFileName_plot).append(".png").data());
   canvas->Print(std::string(outputFileName_plot).append(".pdf").data());
-  //canvas->Print(std::string(outputFileName_plot).append(".root").data());
-  //canvas->Print(std::string(outputFileName_plot).append("_HTTWithKinFit.pdf").data());
-  //canvas->Print(std::string(outputFileName_plot).append("_HTTWithKinFit.root").data());
-  //delete canvas;
 
   std::cout << " do canvas" << std::endl;
   TCanvas* canvas2 = new TCanvas("canvas", "canvas", 5500, 5500);
@@ -708,6 +800,7 @@ void makePostFitPlots(
 	std::string source,
 	bool useLogPlot,
 	bool hasFlips,
+	bool hasConversions,
 	std::string labelX,
 	std::string labelVar,
 	float minYPlot,
@@ -738,18 +831,12 @@ void makePostFitPlots(
   fileI.append("/ttH_");
   fileI.append(name);
   fileI.append("_shapes.root");
-  //str.append(str2)
   inputFileNames[channelC]  = fileI;
-  //inputFileNames["ttH_1l_2tau_postfit"] = fileI;
-  //inputFileNames["ttH_1l_2tau_prefit"]  = "ttH_1l_2tau_mvaOutput_1l_2tau_ttbar_HTTNoKinFit_MVAonly_2016_shapes.root";
-  //inputFileNames["ttH_1l_2tau_postfit"] = "ttH_1l_2tau_mvaOutput_1l_2tau_ttbar_HTTNoKinFit_MVAonly_2016_shapes.root";
 
   bool doKeepBlinded = true;
-  //bool doKeepBlinded = false;
 
   for ( std::vector<std::string>::const_iterator category = categories.begin();
 	category != categories.end(); ++category ) {
-    //std::string inputFileName_full = Form("%s%s", inputFilePath.data(), inputFileNames[*category].data());
     std::string inputFileName_full = Form("%s%s", inputFilePath.data(), inputFileNames[*category].data());
     TFile* inputFile = new TFile(inputFileName_full.data());
     if ( !inputFile ) {
@@ -795,11 +882,26 @@ void makePostFitPlots(
     makeBinContentsPositive(histogram_Rares);
     dumpHistogram(histogram_Rares);
 
+		TH1* histogram_Flips;
+		if (hasFlips) {
+		 histogram_Flips = loadHistogram(inputFile, *category, "flips_data");
+    std::cout << "histogram_Flips = " << histogram_Flips << std::endl;
+    makeBinContentsPositive(histogram_Flips);
+    dumpHistogram(histogram_Flips);
+		}
+
+		TH1* histogram_Conv;
+		if (hasConversions) {
+		 histogram_Conv = loadHistogram(inputFile, *category, "conversions"); // "conversions"
+    std::cout << "histogram_Flips = " << histogram_Conv << std::endl;
+    makeBinContentsPositive(histogram_Conv);
+    dumpHistogram(histogram_Conv);
+		}
+
     TH1* histogram_fakes = loadHistogram(inputFile, *category, "fakes_data");
     std::cout << "histogram_fakes = " << histogram_fakes << std::endl;
-    //TArrayD binEdges[6]= {-1.0,-1.6,-1.2,1.2,1.6, 1.0};
-    TH1* testefakes=getRebinnedHistogram1d(histogram_fakes,  5 ); //Xanda
-    std::cout<<"FAKES REBINNED "<<testefakes->GetBinContent(5)<<" "<<testefakes->Integral() << std::endl;
+    //TH1* testefakes=getRebinnedHistogram1d(histogram_fakes,  5 ); //Xanda
+    //std::cout<<"FAKES REBINNED "<<testefakes->GetBinContent(5)<<" "<<testefakes->Integral() << std::endl;
     makeBinContentsPositive(histogram_fakes);
     dumpHistogram(histogram_fakes);
 
@@ -809,12 +911,14 @@ void makePostFitPlots(
     dumpHistogram(histogramSum_mcBgr);
     TH1* histogramSum_mc = (TH1*)histogramSum_mcBgr->Clone("histogramSum_mc");
     histogramSum_mc->Add(histogram_ttH);
-    std::cout << "histogramSum_mc = " << histogramSum_mc << std::endl;
+    std::cout << "histogramSum_mc test = " << histogramSum_mc << std::endl;
     TH1* histogramErr_mc = (TH1*)histogramSum_mc->Clone("TotalBkgErr");
+		std::cout << "cloned = "<< std::endl;
 
     std::string outputFilePath = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/ttH_htt/";
     std::string outputFileName = Form("%s/%s/%s_%s.pdf", source.data(),dir.data(), category->data(),name.data());
-		std::string labelY = Form("dN/%s", labelX.c_str());
+		//std::string labelY = Form("dN/%s", labelX.c_str());
+		std::string labelY = Form("%s", labelX.c_str());
 
     makePlot(histogram_data, doKeepBlinded,
 	     histogram_ttH,
@@ -823,14 +927,19 @@ void makePostFitPlots(
 	     histogram_EWK,
 	     histogram_Rares,
 	     histogram_fakes,
+			 histogram_Flips,
+			 histogram_Conv,
 	     histogramSum_mc,
 	     histogramErr_mc,
 	     labelX.c_str(), labelY.c_str(),
 			 minYPlot, maxYPlot,
 	     true,
 	     labelVar.c_str(), //name.data(),
+			 channel,
 	     outputFileName,
-	     useLogPlot);
+	     useLogPlot,
+			 hasFlips, hasConversions
+		 );
     std::cout<<"got out function"<<std::endl;
 
     delete histogram_ttH;

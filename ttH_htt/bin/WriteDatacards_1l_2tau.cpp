@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 
   std::string input_file, output_file;
   double lumi = -1.;
-  bool add_shape_sys = true;
+  bool add_shape_sys = false;
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 
   //vector<string> bkg_procs = {"TT", "TTW", "TTZ", "EWK", "Rares", proc_fakes};
   //vector<string> bkg_procs = {"TTW", "TTZ", "EWK", proc_fakes};
-  vector<string> bkg_procs = {"TTW", "TTZ", "EWK", "Rares", proc_fakes};
+  vector<string> bkg_procs = {"TTW", "TTZ", "EWK", "Rares","conversions", proc_fakes};
   cb.AddProcesses({"*"}, {"*"}, {"13TeV"}, {"*"}, bkg_procs, cats, false);
 
   vector<string> sig_procs = {"ttH_hww", "ttH_hzz", "ttH_htt"};
@@ -97,14 +97,13 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "pdf_Higgs", "lnN", SystMap<>::init(1.036));
   cb.cp().process(sig_procs)
     .AddSyst(cb, "QCDscale_ttH", "lnN", SystMapAsymm<>::init(0.915, 1.058));
-  /* Xanda: this is not currently written in datacard -- understand why
+  /*
   if ( add_shape_sys ) {
     cb.cp().process(sig_procs)
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttH_x1", "shape", SystMap<>::init(1.0));
     cb.cp().process(sig_procs)
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttH_y1", "shape", SystMap<>::init(1.0));
-  }
-  */
+  }*/
 
   // CV: PDF and scale uncertainties for tt+jets background taken from
   //      https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
@@ -118,7 +117,7 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "pdf_qqbar", "lnN", SystMap<>::init(1.04));
   cb.cp().process({"TTW"})
       .AddSyst(cb, "QCDscale_ttW", "lnN", SystMap<>::init(1.12));
-  /* Xanda: this is not currently written in datacard -- understand why
+  /*
   if ( add_shape_sys ) {
     cb.cp().process({"TTW"})
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_x1", "shape", SystMap<>::init(1.0));
@@ -131,7 +130,7 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "pdf_gg", "lnN", SystMap<>::init(0.966));
   cb.cp().process({"TTZ"})
       .AddSyst(cb, "QCDscale_ttZ", "lnN", SystMap<>::init(1.11));
-  /* Xanda: this is not currently written in datacard -- understand why
+  /*
   if ( add_shape_sys ) {
     cb.cp().process({"TTZ"})
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_x1", "shape", SystMap<>::init(1.0));
@@ -139,6 +138,9 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_y1", "shape", SystMap<>::init(1.0));
   }
   */
+
+  cb.cp().process({"conversions"})
+      .AddSyst(cb, "CMS_ttHl_QF", "lnN", SystMap<>::init(1.3));
 
   cb.cp().process({"EWK"})
       .AddSyst(cb, "CMS_ttHl_EWK", "lnN", SystMap<>::init(1.5));
@@ -162,7 +164,6 @@ int main(int argc, char** argv) {
   if ( add_shape_sys ) {
     cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "EWK", "Rares"}}))
         .AddSyst(cb, "CMS_ttHl_JES", "shape", SystMap<>::init(1.0));
-
     cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "EWK", "Rares"}}))
         .AddSyst(cb, "CMS_ttHl_tauES", "shape", SystMap<>::init(1.0));
   }
@@ -193,7 +194,7 @@ int main(int argc, char** argv) {
   //     with 2.3 corresponding to integrated luminosity of 2015 dataset
   if ( lumi > 0. ) {
     std::cout << "scaling signal and background yields to L=" << lumi << "fb^-1 @ 13 TeV." << std::endl;
-    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "EWK", "Rares", proc_fakes}})).ForEachProc([&](ch::Process* proc) {
+    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "EWK", "Rares", "conversions", proc_fakes}})).ForEachProc([&](ch::Process* proc) {
       proc->set_rate(proc->rate()*lumi/2.3);
     });
   }
