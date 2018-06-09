@@ -67,11 +67,7 @@ int main(int argc, char** argv) {
   //! [part4]
   //std::string proc_fakes = "fakes_mc";
   std::string proc_fakes = "fakes_data";
-
-
-  //vector<string> bkg_procs = {"TT", "TTW", "TTZ", "EWK", "Rares", proc_fakes};
-  //vector<string> bkg_procs = {"TTW", "TTZ", "EWK", proc_fakes};
-  vector<string> bkg_procs = {"TTW", "TTZ", "EWK", "Rares", proc_fakes};
+  vector<string> bkg_procs = {"TTW", "TTZ", "EWK", "Rares", "tH", proc_fakes};
 
   cb.AddProcesses({"*"}, {"*"}, {"13TeV"}, {"*"}, bkg_procs, cats, false);
 
@@ -90,9 +86,7 @@ int main(int argc, char** argv) {
   //! [part5]
   cb.cp().signals()
       .AddSyst(cb, "lumi_$ERA", "lnN", SystMap<era>::init
-	       //({"13TeV"}, 1.027));
-	       ({"13TeV_2016"}, 1.026));
-
+	       ({"13TeV_2017"}, 1.023));
   //! [part5]
 
   //! [part6]
@@ -114,6 +108,14 @@ int main(int argc, char** argv) {
   //    .AddSyst(cb, "pdf_qqbar", "lnN", SystMap<>::init(1.03));
   //cb.cp().process({"TT"})
   //    .AddSyst(cb, "QCDscale_ttJets", "lnN", SystMap<>::init(1.04));
+
+  // We do not separate the tH components as here
+  // https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L83-L84
+  // I took the largest syst
+  cb.cp().process({"tH"})
+      .AddSyst(cb, "pdf_qg", "lnN", SystMap<>::init(1.1));
+  cb.cp().process({"tH"})
+    .AddSyst(cb, "QCDscale_tH", "lnN", SystMapAsymm<>::init(0.939, 1.046));
 
   cb.cp().process({"TTW"})
       .AddSyst(cb, "pdf_qqbar", "lnN", SystMap<>::init(1.04));
@@ -157,20 +159,20 @@ int main(int argc, char** argv) {
   cb.cp().process({proc_fakes})
     .AddSyst(cb, "CMS_ttHl_Clos_m_norm", "lnN", SystMap<>::init(1.1));
 
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
       .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.03));
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
       .AddSyst(cb, "CMS_ttHl_lepEff_elloose", "lnN", SystMap<>::init(1.04));
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
       .AddSyst(cb, "CMS_ttHl_lepEff_muloose", "lnN", SystMap<>::init(1.03));
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
       .AddSyst(cb, "CMS_ttHl_lepEff_tight", "lnN", SystMap<>::init(1.09));
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
       .AddSyst(cb, "CMS_ttHl_tauID", "lnN", SystMap<>::init(1.1));
   if ( add_shape_sys ) {
-    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
         .AddSyst(cb, "CMS_ttHl_JES", "shape", SystMap<>::init(1.0));
-    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
         .AddSyst(cb, "CMS_ttHl_tauES", "shape", SystMap<>::init(1.0));
   }
 
@@ -179,7 +181,7 @@ int main(int argc, char** argv) {
 
   if ( add_shape_sys ) {
     for ( auto s : {"HF", "HFStats1", "HFStats2", "LF", "LFStats1", "LFStats2", "cErr1", "cErr2"} ) {
-      cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+      cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
           .AddSyst(cb, Form("CMS_ttHl_btag_%s", s), "shape", SystMap<>::init(1.0));
     }
   }
@@ -200,7 +202,7 @@ int main(int argc, char** argv) {
   //     with 2.3 corresponding to integrated luminosity of 2015 dataset
   if ( lumi > 0. ) {
     std::cout << "scaling signal and background yields to L=" << lumi << "fb^-1 @ 13 TeV." << std::endl;
-    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", proc_fakes}})).ForEachProc([&](ch::Process* proc) {
+    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH", proc_fakes}})).ForEachProc([&](ch::Process* proc) {
       proc->set_rate(proc->rate()*lumi/2.3);
     });
   }

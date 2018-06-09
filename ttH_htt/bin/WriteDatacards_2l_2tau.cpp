@@ -19,6 +19,10 @@ using boost::starts_with;
 namespace po = boost::program_options;
 
 int main(int argc, char** argv) {
+  bool add_tH = false;
+  bool add_TTWW = false;
+  bool blinded = true;
+  bool add_th_shape_sys = false;
 
   std::string input_file, output_file;
   double lumi = -1.;
@@ -64,18 +68,19 @@ int main(int argc, char** argv) {
   //! [part2]
 
   //! [part3]
-  cb.AddObservations({"*"}, {"ttHl"}, {"13TeV"}, {"*"}, cats);
+  if (!blinded) cb.AddObservations({"*"}, {"ttHl"}, {"13TeV"}, {"*"}, cats);
   //! [part3]
 
   //! [part4]
-  //std::string proc_fakes = "fakes_mc";
   std::string proc_fakes = "fakes_data";
-
-
-  //vector<string> bkg_procs = {"TT", "TTW", "TTZ", "EWK", "Rares", proc_fakes};
-  //vector<string> bkg_procs = {"TTW", "TTZ", "EWK", proc_fakes};
   vector<string> bkg_procs = {"TTW", "TTZ", "EWK", "Rares", proc_fakes};
+  if (add_tH) bkg_procs.push_back("tH");
+  if (add_TTWW) bkg_procs.push_back("TTWW");
+  cb.AddProcesses({"*"}, {"*"}, {"13TeV"}, {"*"}, bkg_procs, cats, false);
 
+  vector<string> bkg_procs_MConly = {"TTW", "TTZ", "EWK", "Rares","conversions"};
+  if (add_tH) bkg_procs_MConly.push_back("tH");
+  if (add_TTWW) bkg_procs_MConly.push_back("TTWW");
   cb.AddProcesses({"*"}, {"*"}, {"13TeV"}, {"*"}, bkg_procs, cats, false);
 
   vector<string> sig_procs = {"ttH_hww", "ttH_hzz", "ttH_htt"};
@@ -93,54 +98,83 @@ int main(int argc, char** argv) {
   //! [part5]
   cb.cp().signals()
       .AddSyst(cb, "lumi_$ERA", "lnN", SystMap<era>::init
-	       //({"13TeV"}, 1.027));
-	       ({"13TeV_2016"}, 1.026));
+	       ({"13TeV_2017"}, 1.023));
 
   //! [part5]
 
   //! [part6]
   cb.cp().process(sig_procs)
-      .AddSyst(cb, "pdf_Higgs", "lnN", SystMap<>::init(1.036));
+      .AddSyst(cb, "pdf_Higgs_ttH", "lnN", SystMap<>::init(1.036));
   cb.cp().process(sig_procs)
     .AddSyst(cb, "QCDscale_ttH", "lnN", SystMapAsymm<>::init(0.915, 1.058));
-  /*
-  if ( add_shape_sys ) {
+  cb.cp().process(sig_procs)
+      .AddSyst(cb, "BR_hbb", "lnN", SystMap<>::init(1.0126));
+  // in this analysis un-splitted ttH sample is TTHnobb
+  cb.cp().process({"ttH_hww_gentau", "ttH_hww_faketau"})
+      .AddSyst(cb, "BR_hvv", "lnN", SystMap<>::init(1.0154));
+  cb.cp().process({"ttH_hzz_gentau", "ttH_hzz_faketau"})
+      .AddSyst(cb, "BR_hzz", "lnN", SystMap<>::init(1.0154));
+  cb.cp().process({"ttH_htt_gentau", "ttH_htt_faketau"})
+      .AddSyst(cb, "BR_hzz", "lnN", SystMap<>::init(1.0165));
+  // Xanda : check if the bellow needs to be renamed https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L98-L104
+  if ( add_shape_sys && add_th_shape_sys ) {
     cb.cp().process(sig_procs)
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttH_x1", "shape", SystMap<>::init(1.0));
     cb.cp().process(sig_procs)
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttH_y1", "shape", SystMap<>::init(1.0));
-  }*/
+  }
 
-  // CV: PDF and scale uncertainties for tt+jets background taken from
-  //      https://twiki.cern.ch/twiki/bin/view/LHCPhysics/TtbarNNLO
-  //cb.cp().process({"TT"})
-  //    .AddSyst(cb, "pdf_qqbar", "lnN", SystMap<>::init(1.03));
-  //cb.cp().process({"TT"})
-  //    .AddSyst(cb, "QCDscale_ttJets", "lnN", SystMap<>::init(1.04));
+  // We do not separate the tH components as here
+  // https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L83-L84
+  // I took the largest syst
+  if (add_tH) {
+    cb.cp().process({"tH"})
+        .AddSyst(cb, "pdf_qg", "lnN", SystMap<>::init(1.027));
+    cb.cp().process({"tH"})
+      .AddSyst(cb, "QCDscale_tH", "lnN", SystMapAsymm<>::init(0.939, 1.046));
+  }
 
   cb.cp().process({"TTW"})
       .AddSyst(cb, "pdf_qqbar", "lnN", SystMap<>::init(1.04));
   cb.cp().process({"TTW"})
-      .AddSyst(cb, "QCDscale_ttW", "lnN", SystMap<>::init(1.12));
-  /*
-  if ( add_shape_sys ) {
+      .AddSyst(cb, "QCDscale_ttW", "lnN", SystMapAsymm<>::init(0.885, 1.129));
+  // Xanda : check if the bellow needs to be renamed https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L98-L104
+  if ( add_shape_sys  && add_th_shape_sys ) {
     cb.cp().process({"TTW"})
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_x1", "shape", SystMap<>::init(1.0));
     cb.cp().process({"TTW"})
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_y1", "shape", SystMap<>::init(1.0));
-  }*/
+  }
+
+  if (add_TTWW) {
+    cb.cp().process({"TTWW"})
+        .AddSyst(cb, "pdf_TTWW", "lnN", SystMap<>::init(1.03));
+    cb.cp().process({"TTWW"})
+        .AddSyst(cb, "QCDscale_ttWW", "lnN", SystMapAsymm<>::init(0.891, 1.081));
+    // Xanda : check if this bellow is needed (and renamed)
+    //if ( add_shape_sys && add_th_shape_sys ) {
+    //  cb.cp().process({"TTWW_gentau","TTWW_faketau"})
+    //    .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_x1", "shape", SystMap<>::init(1.0));
+    //  cb.cp().process({"TTWW_gentau","TTWW_faketau"})
+    //    .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_y1", "shape", SystMap<>::init(1.0));
+    //}
+  }
 
   cb.cp().process({"TTZ"})
       .AddSyst(cb, "pdf_gg", "lnN", SystMap<>::init(0.966));
   cb.cp().process({"TTZ"})
-      .AddSyst(cb, "QCDscale_ttZ", "lnN", SystMap<>::init(1.11));
-  /*
-  if ( add_shape_sys ) {
+      .AddSyst(cb, "QCDscale_ttZ", "lnN", SystMapAsymm<>::init(0.904, 1.112));
+  // Xanda : check if the bellow needs to be renamed https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L98-L104
+  if ( add_shape_sys  && add_th_shape_sys ) {
     cb.cp().process({"TTZ"})
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_x1", "shape", SystMap<>::init(1.0));
     cb.cp().process({"TTZ"})
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_y1", "shape", SystMap<>::init(1.0));
-  }*/
+  }
+
+  cb.cp().process({"conversions"})
+      .AddSyst(cb, "CMS_ttHl_Convs", "lnN", SystMap<>::init(1.5));
+  // Xanda: on the datacards we do have thu_shape
 
   cb.cp().process({"EWK"})
       .AddSyst(cb, "CMS_ttHl_EWK", "lnN", SystMap<>::init(1.5));
@@ -152,15 +186,15 @@ int main(int argc, char** argv) {
   //    .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.3));
 
   cb.cp().process({proc_fakes})
-    .AddSyst(cb, "CMS_ttHl_FRe_norm", "lnN", SystMap<>::init(1.25));
+    .AddSyst(cb, "CMS_ttHl16_FRe_norm", "lnN", SystMap<>::init(1.25));
   cb.cp().process({proc_fakes})
-    .AddSyst(cb, "CMS_ttHl_FRm_norm", "lnN", SystMap<>::init(1.25));
+    .AddSyst(cb, "CMS_ttHl16_FRm_norm", "lnN", SystMap<>::init(1.25));
   cb.cp().process({proc_fakes})
-    .AddSyst(cb, "CMS_ttHl_Clos_e_norm", "lnN", SystMap<>::init(0.95));
+    .AddSyst(cb, "CMS_ttHl17_Clos_e_norm", "lnN", SystMap<>::init(0.95));
   cb.cp().process({proc_fakes})
-    .AddSyst(cb, "CMS_ttHl_Clos_m_norm", "lnN", SystMap<>::init(1.1));
-  /*
-  if ( add_shape_sys ) {
+    .AddSyst(cb, "CMS_ttHl17_Clos_m_norm", "lnN", SystMap<>::init(1.1));
+
+  if ( add_shape_sys && add_th_shape_sys ) {
     cb.cp().process({proc_fakes})
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttH_x1", "shape", SystMap<>::init(1.0));
     cb.cp().process({proc_fakes})
@@ -173,22 +207,22 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_x1", "shape", SystMap<>::init(1.0));
     cb.cp().process({proc_fakes})
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_y1", "shape", SystMap<>::init(1.0));
-  }*/
+  }
 
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.03));
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_elloose", "lnN", SystMap<>::init(1.04));
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_muloose", "lnN", SystMap<>::init(1.03));
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_tight", "lnN", SystMap<>::init(1.09));
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_tauID", "lnN", SystMap<>::init(1.1));
   if ( add_shape_sys ) {
-    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+    cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
         .AddSyst(cb, "CMS_ttHl_JES", "shape", SystMap<>::init(1.0));
-    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+    cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
         .AddSyst(cb, "CMS_ttHl_tauES", "shape", SystMap<>::init(1.0));
   }
 
@@ -197,7 +231,7 @@ int main(int argc, char** argv) {
 
   if ( add_shape_sys ) {
     for ( auto s : {"HF", "HFStats1", "HFStats2", "LF", "LFStats1", "LFStats2", "cErr1", "cErr2"} ) {
-      cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+      cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
           .AddSyst(cb, Form("CMS_ttHl_btag_%s", s), "shape", SystMap<>::init(1.0));
     }
   }
@@ -227,7 +261,7 @@ int main(int argc, char** argv) {
   //     with 2.3 corresponding to integrated luminosity of 2015 dataset
   if ( lumi > 0. ) {
     std::cout << "scaling signal and background yields to L=" << lumi << "fb^-1 @ 13 TeV." << std::endl;
-    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", proc_fakes}})).ForEachProc([&](ch::Process* proc) {
+    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH", proc_fakes}})).ForEachProc([&](ch::Process* proc) {
       proc->set_rate(proc->rate()*lumi/2.3);
     });
   }
@@ -255,6 +289,19 @@ int main(int argc, char** argv) {
   // We create the output root file that will contain all the shapes.
   TFile output(output_file.data(), "RECREATE");
 
+  if ( add_shape_sys ) {
+    for ( auto s : {"HFStats1", "HFStats2", "LFStats1", "LFStats2"} ) {
+      cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+          .RenameSystematic(cb, Form("CMS_ttHl_btag_%s", s), Form("CMS_ttHl17_btag_%s", s));
+    }
+    for ( auto s : {"HF", "LF", "cErr1", "cErr2"} ) {
+      cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+          .RenameSystematic(cb, Form("CMS_ttHl_btag_%s", s) , Form("CMS_ttHl16_btag_%s", s));
+    }
+  }
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+      .RenameSystematic(cb, "CMS_ttHl_JES", "CMS_scale_j");
+
   // Finally we iterate through bins and write a
   // datacard.
   for (auto b : bins) {
@@ -271,25 +318,3 @@ int main(int argc, char** argv) {
   //! [part9]
 
 }
-/*
-x_fakes_data_CMS_ttHl_thu_shape_ttH_x1Up
-
-KEY: TH1D	x_fakes_data;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRe_normUp;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRe_normDown;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRe_ptUp;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRe_ptDown;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRe_beUp;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRe_beDown;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRm_normUp;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRm_normDown;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRm_ptUp;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRm_ptDown;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRm_beUp;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRm_beDown;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRjt_normUp;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRjt_normDown;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRjt_shapeUp;1
-  KEY: TH1D	x_fakes_data_CMS_ttHl_FRjt_shapeDown;1
-  KEY: TH1D	x_data_obs;1
-  */

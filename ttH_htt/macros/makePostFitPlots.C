@@ -878,7 +878,7 @@ void makePostFitPlots(
     dumpHistogram(histogram_EWK);
 
     TH1* histogram_Rares = loadHistogram(inputFile, *category, "Rares");
-    std::cout << "histogram_Rares = " << histogram_Rares << std::endl;
+    std::cout << "histogram_Rares = " << histogram_Rares << " " << hasFlips<< std::endl;
     makeBinContentsPositive(histogram_Rares);
     dumpHistogram(histogram_Rares);
 
@@ -893,7 +893,7 @@ void makePostFitPlots(
 		TH1* histogram_Conv;
 		if (hasConversions) {
 		 histogram_Conv = loadHistogram(inputFile, *category, "conversions"); // "conversions"
-    std::cout << "histogram_Flips = " << histogram_Conv << std::endl;
+    std::cout << "histogram_Conv = " << histogram_Conv << std::endl;
     makeBinContentsPositive(histogram_Conv);
     dumpHistogram(histogram_Conv);
 		}
