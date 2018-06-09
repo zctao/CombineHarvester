@@ -86,10 +86,10 @@ int main(int argc, char** argv) {
     bkg_procs_faketau.push_back(bkg_name);
   }
   bkg_procs.push_back("fakes_data");
-  //bkg_procs.push_back("conversions");
+  bkg_procs.push_back("conversions");
 
   vector<string> bkg_procs_MConly = bkg_procs_MC;
-  //bkg_procs_MConly.push_back("conversions");
+  bkg_procs_MConly.push_back("conversions");
 
   cb.AddProcesses({"*"}, {"*"}, {"13TeV"}, {"*"}, bkg_procs, cats, false);
 
