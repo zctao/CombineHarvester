@@ -19,9 +19,8 @@ using boost::starts_with;
 namespace po = boost::program_options;
 
 int main(int argc, char** argv) {
-  bool add_tH = false;
-  bool add_TTWW = false;
-  bool blinded = true;
+  bool add_tH = true;
+  bool add_TTWW = true;
   bool add_th_shape_sys = false;
 
   std::string input_file, output_file;
@@ -68,7 +67,7 @@ int main(int argc, char** argv) {
   //! [part2]
 
   //! [part3]
-  if (!blinded) cb.AddObservations({"*"}, {"ttHl"}, {"13TeV"}, {"*"}, cats);
+  cb.AddObservations({"*"}, {"ttHl"}, {"13TeV"}, {"*"}, cats);
   //! [part3]
 
   //! [part4]
@@ -248,12 +247,12 @@ int main(int argc, char** argv) {
   }else{
     cb.cp().backgrounds().ExtractShapes(
 	aux_shapes + input_file.data(),
-	"$PROCESS",
-	"$PROCESS_$SYSTEMATIC");
+	"x_$PROCESS",
+	"x_$PROCESS_$SYSTEMATIC");
     cb.cp().signals().ExtractShapes(
 	aux_shapes + input_file.data(),
-	"$PROCESS",
-	"$PROCESS_$SYSTEMATIC");
+	"x_$PROCESS",
+	"x_$PROCESS_$SYSTEMATIC");
   }
   //! [part7]
 

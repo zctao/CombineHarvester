@@ -21,7 +21,6 @@ namespace po = boost::program_options;
 int main(int argc, char** argv) {
   bool add_tH = true;
   bool add_TTWW = true;
-  bool blinded = true;
   bool add_th_shape_sys = false;
 
   std::string input_file, output_file;
@@ -65,7 +64,7 @@ int main(int argc, char** argv) {
   //! [part2]
 
   //! [part3]
-  if (!blinded) cb.AddObservations({"*"}, {"ttHl"}, {"13TeV"}, {"*"}, cats);
+  cb.AddObservations({"*"}, {"ttHl"}, {"13TeV"}, {"*"}, cats);
   //! [part3]
 
   //! [part4]
@@ -214,12 +213,12 @@ int main(int argc, char** argv) {
   //! [part7]
   cb.cp().backgrounds().ExtractShapes(
       aux_shapes + input_file,
-      "$PROCESS",
-      "$PROCESS_$SYSTEMATIC");
+      "x_$PROCESS",
+      "x_$PROCESS_$SYSTEMATIC");
   cb.cp().signals().ExtractShapes(
       aux_shapes + input_file,
-      "$PROCESS",
-      "$PROCESS_$SYSTEMATIC");
+      "x_$PROCESS",
+      "x_$PROCESS_$SYSTEMATIC");
   //! [part7]
 
   // CV: scale yield of all signal and background processes by lumi/2.3,

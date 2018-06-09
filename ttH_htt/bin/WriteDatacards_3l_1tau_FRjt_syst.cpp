@@ -19,9 +19,8 @@ using boost::starts_with;
 namespace po = boost::program_options;
 
 int main(int argc, char** argv) {
-  bool add_tH = false;
-  bool add_TTWW = false;
-  bool blinded = true;
+  bool add_tH = true;
+  bool add_TTWW = true;
   bool add_th_shape_sys = false;
 
   std::string input_file, output_file;
@@ -65,7 +64,7 @@ int main(int argc, char** argv) {
   //! [part2]
 
   //! [part3]
-  if (!blinded) cb.AddObservations({"*"}, {"ttHl"}, {"13TeV"}, {"*"}, cats);
+  cb.AddObservations({"*"}, {"ttHl"}, {"13TeV"}, {"*"}, cats);
   //! [part3]
 
   //! [part4]
@@ -87,10 +86,10 @@ int main(int argc, char** argv) {
     bkg_procs_faketau.push_back(bkg_name);
   }
   bkg_procs.push_back("fakes_data");
-  bkg_procs.push_back("conversions");
+  //bkg_procs.push_back("conversions");
 
   vector<string> bkg_procs_MConly = bkg_procs_MC;
-  bkg_procs_MConly.push_back("conversions");
+  //bkg_procs_MConly.push_back("conversions");
 
   cb.AddProcesses({"*"}, {"*"}, {"13TeV"}, {"*"}, bkg_procs, cats, false);
 
@@ -293,12 +292,12 @@ int main(int argc, char** argv) {
   //! [part7]
   cb.cp().backgrounds().ExtractShapes(
       aux_shapes + input_file.data(),
-      "$PROCESS",
-      "$PROCESS_$SYSTEMATIC");
+      "x_$PROCESS",
+      "x_$PROCESS_$SYSTEMATIC");
   cb.cp().signals().ExtractShapes(
       aux_shapes + input_file.data(),
-      "$PROCESS",
-      "$PROCESS_$SYSTEMATIC");
+      "x_$PROCESS",
+      "x_$PROCESS_$SYSTEMATIC");
   //! [part7]
 
   // CV: scale yield of all signal and background processes by lumi/2.3,
@@ -349,19 +348,19 @@ int main(int argc, char** argv) {
   // Xanda: guess what is what (see on rename section)
   // https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L140-L163
   //cb.cp().process({"fakes_data"})
-  //   .RenameSystematic(cb, "CMS_ttHl_FRm_norm", "shape", SystMap<>::init(1.0));
-  cb.cp().process({"fakes_data"})
-     .RenameSystematic(cb, "CMS_ttHl_FRe_shape_pt", "CMS_ttHl16_FRe_pt");
+  //   .RenameSystematic(cb, "CMS_ttHl_FRe_norm", "CMS_ttHl16_FRe_norm");
+  //cb.cp().process({"fakes_data"})
+  //   .RenameSystematic(cb, "CMS_ttHl_FRe_shape_pt", "CMS_ttHl16_FRe_pt");
   //cb.cp().process({"fakes_data"})
   //   .RenameSystematic(cb, "CMS_ttHl_FRe_shape_eta", ??);
   //cb.cp().process({"fakes_data"})
   //   .RenameSystematic(cb, "CMS_ttHl_FRe_shape_eta_barrel", ??);
   //cb.cp().process({"fakes_data"})
-  //   .RenameSystematic(cb, "CMS_ttHl_FRm_norm", "shape", SystMap<>::init(1.0));
+  //   .RenameSystematic(cb, "CMS_ttHl_FRm_norm", "CMS_ttHl16_FRm_norm");
   cb.cp().process({"fakes_data"})
      .RenameSystematic(cb, "CMS_ttHl_FRm_shape_pt", "CMS_ttHl16_FRm_pt");
   //cb.cp().process({"fakes_data"})
-  //  .RenameSystematic(cb, "CMS_ttHl_FRm_shape_eta", "shape", SystMap<>::init(1.0));
+  //  .RenameSystematic(cb, "CMS_ttHl_FRm_shape_eta", ??);
 
   // Finally we iterate through bins and write a
   // datacard.
