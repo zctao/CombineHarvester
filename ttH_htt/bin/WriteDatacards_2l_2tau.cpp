@@ -181,8 +181,8 @@ int main(int argc, char** argv) {
   cb.cp().process({"Rares"})
       .AddSyst(cb, "CMS_ttHl_Rares", "lnN", SystMap<>::init(1.5));
 
-  //cb.cp().process({proc_fakes})
-  //    .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.3));
+  cb.cp().process({proc_fakes})
+      .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.5));
 
   cb.cp().process({proc_fakes})
     .AddSyst(cb, "CMS_ttHl16_FRe_norm", "lnN", SystMap<>::init(1.25));
@@ -225,8 +225,8 @@ int main(int argc, char** argv) {
         .AddSyst(cb, "CMS_ttHl_tauES", "shape", SystMap<>::init(1.0));
   }
 
-  //cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
-  //    .AddSyst(cb, "CMS_eff_m", "lnN", SystMap<>::init(1.02));
+  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares"}}))
+      .AddSyst(cb, "CMS_eff_m", "lnN", SystMap<>::init(1.02));
 
   if ( add_shape_sys ) {
     for ( auto s : {"HF", "HFStats1", "HFStats2", "LF", "LFStats1", "LFStats2", "cErr1", "cErr2"} ) {

@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_Rares", "lnN", SystMap<>::init(1.5));
 
   cb.cp().process({proc_fakes})
-      .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.6));
+      .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.5));
 
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.03));
@@ -198,9 +198,8 @@ int main(int argc, char** argv) {
         .AddSyst(cb, "CMS_ttHl_tauES", "shape", SystMap<>::init(1.0));
   }
 
-  // Xanda: It was not on datacards
-  //cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-  //    .AddSyst(cb, "CMS_eff_m", "lnN", SystMap<>::init(1.02));
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+      .AddSyst(cb, "CMS_eff_m", "lnN", SystMap<>::init(1.02));
 
   if ( add_shape_sys ) {
     for ( auto s : {"HF", "HFStats1", "HFStats2", "LF", "LFStats1", "LFStats2", "cErr1", "cErr2"} ) {

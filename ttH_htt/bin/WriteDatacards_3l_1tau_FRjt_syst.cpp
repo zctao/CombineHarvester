@@ -205,6 +205,9 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_Convs", "lnN", SystMap<>::init(1.5));
   // Xanda: on the datacards we do have thu_shape
 
+  cb.cp().process({"fakes_data"})
+      .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.3));
+ 
   if ( add_shape_sys ) {
      // Xanda: guess what is what (see on rename section)
      // https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L140-L163
