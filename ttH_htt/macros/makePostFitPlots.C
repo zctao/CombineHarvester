@@ -54,22 +54,26 @@ TH1* getRebinnedHistogram1d(const TH1* histoOriginal,
   return histoRebinned;
 }
 
-TH1* loadHistogram(TFile* inputFile, const std::string& directory, const std::string& histogramName)
+TH1* loadHistogram(TFile* inputFile, const std::string& directory, const std::string& histogramName, bool gentau)
 {
-  std::string histogramName_full = Form("%s/%s", directory.data(), histogramName.data());
-  TH1* histogram = dynamic_cast<TH1*>(inputFile->Get(histogramName_full.data()));
+  TH1* histogram;
+	std::string histogramName_full = Form("%s/%s", directory.data(), histogramName.data());
+	if ( !gentau ) { 
+		std::cout << "Loading = " << histogramName_full << " "<< std::endl;
+		histogram = dynamic_cast<TH1*>(inputFile->Get(histogramName_full.data()));
+	}else {
+		std::string histogramName_full = Form("%s/%s_gentau", directory.data(), histogramName.data());
+		std::cout << "Loading with gentau " << histogramName_full << " "<< std::endl;
+		histogram = dynamic_cast<TH1*>(inputFile->Get(histogramName_full.data()));
+		std::string histogramName_full2 = Form("%s/%s_faketau", directory.data(), histogramName.data());
+		TH1* histogram2 = dynamic_cast<TH1*>(inputFile->Get(histogramName_full2.data()));
+		histogram->Add(histogram2);
+	}
   if ( !histogram ) {
     std::cerr << "Failed to load histogram = " << histogramName_full << " from file = " << inputFile->GetName() << " !!" << std::endl;
     assert(0);
   }
   if ( !histogram->GetSumw2N() ) histogram->Sumw2();
-  //histogram->Rebin(4);
-  //int numBins = histogram->GetNbinsX();
-  //for ( int iBin = 0; iBin <= (numBins + 1); ++iBin ) {
-  //  histogram->SetBinError(iBin, 0.);
-  //}
-  //histogram->SetBinContent(0, 0.);
-  //histogram->SetBinContent(numBins + 1, 0.);
   return histogram;
 }
 
@@ -90,7 +94,7 @@ double square(double x)
   return x*x;
 }
 
-void makeBinContentsPositive(TH1* histogram, int verbosity = 0)
+void makeBinContentsPositive(TH1* histogram, int verbosity = 1)
 {
   if ( verbosity ) {
     std::cout << "<makeBinContentsPositive>:" << std::endl;
@@ -468,7 +472,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
 
   histogram_ref->Draw("axis");
   // CV: calling THStack::Draw() causes segmentation violation ?!
-  //histogramStack_mc->Draw("histsame"); 
+  //histogramStack_mc->Draw("histsame");
 	std::string testchannel  = "1l_2tau";
 	std::string testchannel2 = "2lss_1tau";
   if ( channel == testchannel ) {
@@ -510,7 +514,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
 // if (histogram_Conv.Integral() > 0)
 
   std::cout << "histogram_fakes_density = " << histogram_fakes_density << ":" << std::endl;
-  dumpHistogram(histogram_fakes_density);
+  //dumpHistogram(histogram_fakes_density);
 
   histogram_ttH_density->Add(histogram_ttZ_density);
   histogram_ttH_density->Add(histogram_ttW_density);
@@ -804,7 +808,8 @@ void makePostFitPlots(
 	std::string labelX,
 	std::string labelVar,
 	float minYPlot,
-	float maxYPlot
+	float maxYPlot,
+	bool gentau
 )
 {
   gROOT->SetBatch(true);
@@ -844,15 +849,15 @@ void makePostFitPlots(
       assert(0);
     }
 
-    TH1* histogram_data = loadHistogram(inputFile, *category, "data_obs");
+    TH1* histogram_data = loadHistogram(inputFile, *category, "data_obs", false);
     std::cout << "histogram_data = " << histogram_data << ":" << std::endl;
     if ( !doKeepBlinded ) {
       dumpHistogram(histogram_data);
     }
 
-    TH1* histogram_ttH_htt = loadHistogram(inputFile, *category, "ttH_htt");
-    TH1* histogram_ttH_hww = loadHistogram(inputFile, *category, "ttH_hww");
-    TH1* histogram_ttH_hzz = loadHistogram(inputFile, *category, "ttH_hzz");
+    TH1* histogram_ttH_htt = loadHistogram(inputFile, *category, "ttH_htt", gentau);
+    TH1* histogram_ttH_hww = loadHistogram(inputFile, *category, "ttH_hww", gentau);
+    TH1* histogram_ttH_hzz = loadHistogram(inputFile, *category, "ttH_hzz", gentau);
     std::cout << "histogram_ttH: htt = " << histogram_ttH_htt << ", hww = " << histogram_ttH_hww << ", hzz = " << histogram_ttH_hzz << std::endl;
     TString histogramName_ttH = TString(histogram_ttH_htt->GetName()).ReplaceAll("_htt", "_sum");
     TH1* histogram_ttH = (TH1*)histogram_ttH_htt->Clone(histogramName_ttH.Data());
@@ -862,29 +867,29 @@ void makePostFitPlots(
     std::cout << "histogram_ttH = " << histogram_ttH << ":" << std::endl;
     dumpHistogram(histogram_ttH);
 
-    TH1* histogram_ttZ = loadHistogram(inputFile, *category, "TTZ");
+    TH1* histogram_ttZ = loadHistogram(inputFile, *category, "TTZ", gentau);
     std::cout << "histogram_ttZ = " << histogram_ttZ << std::endl;
     makeBinContentsPositive(histogram_ttZ);
     dumpHistogram(histogram_ttZ);
 
-    TH1* histogram_ttW = loadHistogram(inputFile, *category, "TTW");
+    TH1* histogram_ttW = loadHistogram(inputFile, *category, "TTW", gentau);
     std::cout << "histogram_ttW = " << histogram_ttW << std::endl;
     makeBinContentsPositive(histogram_ttW);
     dumpHistogram(histogram_ttW);
 
-    TH1* histogram_EWK = loadHistogram(inputFile, *category, "EWK");
+    TH1* histogram_EWK = loadHistogram(inputFile, *category, "EWK", gentau);
     std::cout << "histogram_EWK = " << histogram_EWK << std::endl;
     makeBinContentsPositive(histogram_EWK);
     dumpHistogram(histogram_EWK);
 
-    TH1* histogram_Rares = loadHistogram(inputFile, *category, "Rares");
+    TH1* histogram_Rares = loadHistogram(inputFile, *category, "Rares", gentau);
     std::cout << "histogram_Rares = " << histogram_Rares << " " << hasFlips<< std::endl;
     makeBinContentsPositive(histogram_Rares);
     dumpHistogram(histogram_Rares);
 
 		TH1* histogram_Flips;
 		if (hasFlips) {
-		 histogram_Flips = loadHistogram(inputFile, *category, "flips_data");
+		 histogram_Flips = loadHistogram(inputFile, *category, "flips_data", false);
     std::cout << "histogram_Flips = " << histogram_Flips << std::endl;
     makeBinContentsPositive(histogram_Flips);
     dumpHistogram(histogram_Flips);
@@ -892,20 +897,20 @@ void makePostFitPlots(
 
 		TH1* histogram_Conv;
 		if (hasConversions) {
-		 histogram_Conv = loadHistogram(inputFile, *category, "conversions"); // "conversions"
+		 histogram_Conv = loadHistogram(inputFile, *category, "conversions", false);
     std::cout << "histogram_Conv = " << histogram_Conv << std::endl;
     makeBinContentsPositive(histogram_Conv);
     dumpHistogram(histogram_Conv);
 		}
 
-    TH1* histogram_fakes = loadHistogram(inputFile, *category, "fakes_data");
+    TH1* histogram_fakes = loadHistogram(inputFile, *category, "fakes_data", false);
     std::cout << "histogram_fakes = " << histogram_fakes << std::endl;
     //TH1* testefakes=getRebinnedHistogram1d(histogram_fakes,  5 ); //Xanda
     //std::cout<<"FAKES REBINNED "<<testefakes->GetBinContent(5)<<" "<<testefakes->Integral() << std::endl;
     makeBinContentsPositive(histogram_fakes);
     dumpHistogram(histogram_fakes);
 
-    TH1* histogramSum_mcBgr = loadHistogram(inputFile, *category, "TotalBkg");
+    TH1* histogramSum_mcBgr = loadHistogram(inputFile, *category, "TotalBkg", false);
     std::cout << "histogramSum_mcBgr = " << histogramSum_mcBgr << std::endl;
     makeBinContentsPositive(histogramSum_mcBgr);
     dumpHistogram(histogramSum_mcBgr);
