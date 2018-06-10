@@ -468,7 +468,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
 
   histogram_ref->Draw("axis");
   // CV: calling THStack::Draw() causes segmentation violation ?!
-  //histogramStack_mc->Draw("histsame");
+  //histogramStack_mc->Draw("histsame"); 
 	std::string testchannel  = "1l_2tau";
 	std::string testchannel2 = "2lss_1tau";
   if ( channel == testchannel ) {
@@ -918,7 +918,7 @@ void makePostFitPlots(
     std::string outputFilePath = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/ttH_htt/";
     std::string outputFileName = Form("%s/%s/%s_%s.pdf", source.data(),dir.data(), category->data(),name.data());
 		//std::string labelY = Form("dN/%s", labelX.c_str());
-		std::string labelY = Form("%s", labelX.c_str());
+		std::string labelY = Form("%s", "Events");
 
     makePlot(histogram_data, doKeepBlinded,
 	     histogram_ttH,
