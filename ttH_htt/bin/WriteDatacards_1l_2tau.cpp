@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
   vector<string> bkg_procs_MConly = {"TTW", "TTZ", "EWK", "Rares","conversions"};
   if (add_tH) bkg_procs_MConly.push_back("tH");
   if (add_TTWW) bkg_procs_MConly.push_back("TTWW");
-  cb.AddProcesses({"*"}, {"*"}, {"13TeV"}, {"*"}, bkg_procs, cats, false);
+  //cb.AddProcesses({"*"}, {"*"}, {"13TeV"}, {"*"}, bkg_procs, cats, false);
 
   vector<string> sig_procs = {"ttH_hww", "ttH_hzz", "ttH_htt"};
   cb.AddProcesses(masses, {"*"}, {"13TeV"}, {"*"}, sig_procs, cats, true);
