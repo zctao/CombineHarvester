@@ -19,6 +19,9 @@ using boost::starts_with;
 namespace po = boost::program_options;
 
 int main(int argc, char** argv) {
+  bool add_tH = true;
+  bool add_TTWW = true;
+  bool add_th_shape_sys = false;
 
   std::string input_file, output_file, bin_name;
   double lumi = -1.;
@@ -68,7 +71,7 @@ int main(int argc, char** argv) {
 
   //! [part4]
 
-  vector<string> bkg_procs = {"TTW", "TTZ", "EWK", "Rares", "fakes_data", "flips_data", "conversions", "tH"};
+  vector<string> bkg_procs = {"TTW", "TTZ", "EWK", "Rares", "fakes_data", "flips_data", "conversions", "tH", "TTWW"};
 
   cb.AddProcesses({"*"}, {"*"}, {"13TeV"}, {"*"}, bkg_procs, cats, false);
 
@@ -92,53 +95,72 @@ int main(int argc, char** argv) {
 
   //! [part6]
   cb.cp().process(sig_procs)
-      .AddSyst(cb, "pdf_Higgs", "lnN", SystMap<>::init(1.036));
+      .AddSyst(cb, "pdf_Higgs_ttH", "lnN", SystMap<>::init(1.036));
   cb.cp().process(sig_procs)
     .AddSyst(cb, "QCDscale_ttH", "lnN", SystMapAsymm<>::init(0.915, 1.058));
-  /*
-  if ( add_shape_sys ) {
+  cb.cp().process(sig_procs)
+      .AddSyst(cb, "BR_hbb", "lnN", SystMap<>::init(1.0126));
+  // in this analysis un-splitted ttH sample is TTHnobb
+  cb.cp().process({"ttH_hww_gentau", "ttH_hww_faketau"})
+      .AddSyst(cb, "BR_hvv", "lnN", SystMap<>::init(1.0154));
+  cb.cp().process({"ttH_hzz_gentau", "ttH_hzz_faketau"})
+      .AddSyst(cb, "BR_hzz", "lnN", SystMap<>::init(1.0154));
+  cb.cp().process({"ttH_htt_gentau", "ttH_htt_faketau"})
+      .AddSyst(cb, "BR_hzz", "lnN", SystMap<>::init(1.0165));
+  // Xanda : check if the bellow needs to be renamed https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L98-L104
+  if ( add_shape_sys && add_th_shape_sys ) {
     cb.cp().process(sig_procs)
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttH_x1", "shape", SystMap<>::init(1.0));
     cb.cp().process(sig_procs)
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttH_y1", "shape", SystMap<>::init(1.0));
-  }*/
+  }
 
   // We do not separate the tH components as here
   // https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L83-L84
   // I took the largest syst
-  cb.cp().process({"tH"})
-      .AddSyst(cb, "pdf_qg", "lnN", SystMap<>::init(1.1));
-  cb.cp().process({"tH"})
-    .AddSyst(cb, "QCDscale_tH", "lnN", SystMapAsymm<>::init(0.939, 1.046));
+  if (add_tH) {
+    cb.cp().process({"tH"})
+        .AddSyst(cb, "pdf_qg", "lnN", SystMap<>::init(1.027));
+    cb.cp().process({"tH"})
+      .AddSyst(cb, "QCDscale_tH", "lnN", SystMapAsymm<>::init(0.939, 1.046));
+  }
 
   cb.cp().process({"TTW"})
       .AddSyst(cb, "pdf_qqbar", "lnN", SystMap<>::init(1.04));
   cb.cp().process({"TTW"})
-      .AddSyst(cb, "QCDscale_ttW", "lnN", SystMap<>::init(1.12));
-  /*
-  if ( add_shape_sys ) {
+      .AddSyst(cb, "QCDscale_ttW", "lnN", SystMapAsymm<>::init(0.885, 1.129));
+  if ( add_shape_sys && add_th_shape_sys ) {
     cb.cp().process({"TTW"})
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_x1", "shape", SystMap<>::init(1.0));
     cb.cp().process({"TTW"})
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_y1", "shape", SystMap<>::init(1.0));
-  }*/
+  }
+
+  if (add_TTWW) {
+    cb.cp().process({"TTWW"})
+        .AddSyst(cb, "pdf_TTWW", "lnN", SystMap<>::init(1.03));
+    cb.cp().process({"TTWW"})
+        .AddSyst(cb, "QCDscale_ttWW", "lnN", SystMapAsymm<>::init(0.891, 1.081));
+    // Xanda : check if this bellow is needed (and renamed)
+    //if ( add_shape_sys && add_th_shape_sys ) {
+    //  cb.cp().process({"TTWW_gentau","TTWW_faketau"})
+    //    .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_x1", "shape", SystMap<>::init(1.0));
+    //  cb.cp().process({"TTWW_gentau","TTWW_faketau"})
+    //    .AddSyst(cb, "CMS_ttHl_thu_shape_ttW_y1", "shape", SystMap<>::init(1.0));
+    //}
+  }
 
   cb.cp().process({"TTZ"})
       .AddSyst(cb, "pdf_gg", "lnN", SystMap<>::init(0.966));
   cb.cp().process({"TTZ"})
-      .AddSyst(cb, "QCDscale_ttZ", "lnN", SystMap<>::init(1.11));
-  /*
-  if ( add_shape_sys ) {
+      .AddSyst(cb, "QCDscale_ttZ", "lnN", SystMapAsymm<>::init(0.904, 1.112));
+  if ( add_shape_sys && add_th_shape_sys ) {
     cb.cp().process({"TTZ"})
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_x1", "shape", SystMap<>::init(1.0));
     cb.cp().process({"TTZ"})
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_y1", "shape", SystMap<>::init(1.0));
-  }*/
+  }
 
-  //cb.cp().process({"WZ"})
-  //    .AddSyst(cb, "CMS_ttHl_WZ_4j", "lnN", SystMap<>::init(2.0));
-  //cb.cp().process({"TT"})
-  //    .AddSyst(cb, "CMS_ttHl_TT", "lnN", SystMap<>::init(2.0));
   cb.cp().process({"EWK"})
       .AddSyst(cb, "CMS_ttHl_EWK_4j", "lnN", SystMap<>::init(2.0));
 
@@ -203,12 +225,12 @@ int main(int argc, char** argv) {
   //! [part7]
   cb.cp().backgrounds().ExtractShapes(
       aux_shapes + input_file,
-      "$PROCESS",
-      "$PROCESS_$SYSTEMATIC");
+      "x_$PROCESS",
+      "x_$PROCESS_$SYSTEMATIC");
   cb.cp().signals().ExtractShapes(
       aux_shapes + input_file,
-      "$PROCESS",
-      "$PROCESS_$SYSTEMATIC");
+      "x_$PROCESS",
+      "x_$PROCESS_$SYSTEMATIC");
   //! [part7]
 
   // CV: scale yield of all signal and background processes by lumi/2.3,

@@ -58,7 +58,7 @@ TH1* loadHistogram(TFile* inputFile, const std::string& directory, const std::st
 {
   TH1* histogram;
 	std::string histogramName_full = Form("%s/%s", directory.data(), histogramName.data());
-	if ( !gentau ) { 
+	if ( !gentau ) {
 		std::cout << "Loading = " << histogramName_full << " "<< std::endl;
 		histogram = dynamic_cast<TH1*>(inputFile->Get(histogramName_full.data()));
 	}else {
@@ -838,7 +838,7 @@ void makePostFitPlots(
   fileI.append("_shapes.root");
   inputFileNames[channelC]  = fileI;
 
-  bool doKeepBlinded = true;
+  bool doKeepBlinded = false; //true;
 
   for ( std::vector<std::string>::const_iterator category = categories.begin();
 	category != categories.end(); ++category ) {

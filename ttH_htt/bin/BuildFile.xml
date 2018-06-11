@@ -8,6 +8,11 @@
 <bin file="WriteDatacards_2l_2tau.cpp" name="WriteDatacards_2l_2tau"></bin>
 <bin file="WriteDatacards_2los_2tau.cpp" name="WriteDatacards_2los_2tau"></bin>
 <bin file="WriteDatacards_2lss_2tau.cpp" name="WriteDatacards_2lss_2tau"></bin>
+
+<bin file="WriteDatacards_ttWctrl.cpp" name="WriteDatacards_ttWctrl"></bin>
+<bin file="WriteDatacards_ttZctrl.cpp" name="WriteDatacards_ttZctrl"></bin>
+
+<bin file="WriteDatacards.cpp" name="WriteDatacards"></bin>
 <use name="root"/>
 <use name="rootmath"/>
 <use name="roofit"/>
