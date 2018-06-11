@@ -2,8 +2,8 @@
 <bin file="WriteDatacards_2lss_1tau.cpp" name="WriteDatacards_2lss_1tau"></bin>
 <bin file="WriteDatacards_3l_1tau.cpp" name="WriteDatacards_3l_1tau"></bin>
 <bin file="WriteDatacards_1l_2tau_FRjt_syst.cpp" name="WriteDatacards_1l_2tau_FRjt_syst"></bin>
-<bin file="WriteDatacards_2lss_1tau_FRjt_syst.cpp" name="WriteDatacards_2lss_1tau_FRjt_syst"></bin>
-<bin file="WriteDatacards_3l_1tau_FRjt_syst.cpp" name="WriteDatacards_3l_1tau_FRjt_syst"></bin>
+<bin file="WriteDatacards_2lss_1tau_FRjt_syst.cpp" name="WriteDatacards_2lss_1tau_plain"></bin>
+<bin file="WriteDatacards_3l_1tau_FRjt_syst.cpp" name="WriteDatacards_3l_1tau_plaint"></bin>
 <bin file="WriteDatacards_2los_1tau.cpp" name="WriteDatacards_2los_1tau"></bin>
 <bin file="WriteDatacards_2l_2tau.cpp" name="WriteDatacards_2l_2tau"></bin>
 <bin file="WriteDatacards_2los_2tau.cpp" name="WriteDatacards_2los_2tau"></bin>

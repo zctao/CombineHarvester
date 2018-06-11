@@ -182,7 +182,10 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_Rares", "lnN", SystMap<>::init(1.5));
 
   cb.cp().process({proc_fakes})
-      .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.5));
+      .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.3));
+
+  cb.cp().process({"fakes_data"})
+      .AddSyst(cb, "CMS_ttHl_fakes_tau", "lnN", SystMap<>::init(1.2));
 
   cb.cp().process({proc_fakes})
     .AddSyst(cb, "CMS_ttHl16_FRe_norm", "lnN", SystMap<>::init(1.25));

@@ -174,6 +174,9 @@ int main(int argc, char** argv) {
   cb.cp().process({proc_fakes})
       .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.3));
 
+  cb.cp().process({"fakes_data"})
+      .AddSyst(cb, "CMS_ttHl_fakes_tau", "lnN", SystMap<>::init(1.2));
+
   cb.cp().process({proc_fakes})
     .AddSyst(cb, "CMS_ttHl_FRe_norm", "lnN", SystMap<>::init(1.25));
   cb.cp().process({proc_fakes})
