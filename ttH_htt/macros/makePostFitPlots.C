@@ -197,10 +197,10 @@ TH1* divideHistogramByBinWidth(TH1* histogram)
     if ( binContent < 0. ) binContent = 0.;
     double binError = histogram->GetBinError(iBin);
     double binWidth = xAxis->GetBinWidth(iBin);
-    //histogramDensity->SetBinContent(iBin, binContent); ///binWidth
-    //histogramDensity->SetBinError(iBin, binError); ///binWidth
-		histogramDensity->SetBinContent(iBin, binContent/binWidth); //
-    histogramDensity->SetBinError(iBin, binError/binWidth); //
+    histogramDensity->SetBinContent(iBin, binContent); ///binWidth
+    histogramDensity->SetBinError(iBin, binError); ///binWidth
+		//histogramDensity->SetBinContent(iBin, binContent/binWidth); //
+    //histogramDensity->SetBinError(iBin, binError/binWidth); //
 		if ( binContent <= 0. ) {histogramDensity->SetBinError(iBin, 0.);}
   }
   return histogramDensity;
@@ -931,8 +931,8 @@ void makePostFitPlots(
 
     std::string outputFilePath = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/ttH_htt/";
     std::string outputFileName = Form("%s/%s/%s_%s.pdf", source.data(),dir.data(), category->data(),name.data());
-		std::string labelY = Form("dN/%s", labelX.c_str());
-		//std::string labelY = Form("%s", "dEvents/bin");
+		//std::string labelY = Form("dN/%s", labelX.c_str());
+		std::string labelY = Form("%s", "Events");
 
     makePlot(histogram_data, doKeepBlinded,
 	     histogram_ttH,
