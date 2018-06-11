@@ -205,9 +205,9 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_Convs", "lnN", SystMap<>::init(1.5));
   // Xanda: on the datacards we do have thu_shape
 
-  cb.cp().process({"fakes_data"})
+  cb.cp().process({"fakes_data", bkg_procs_faketau, sig_procs_faketau})
       .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.3));
- 
+
   if ( add_shape_sys ) {
      // Xanda: guess what is what (see on rename section)
      // https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L140-L163
@@ -352,18 +352,19 @@ int main(int argc, char** argv) {
   // https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L140-L163
   //cb.cp().process({"fakes_data"})
   //   .RenameSystematic(cb, "CMS_ttHl_FRe_norm", "CMS_ttHl16_FRe_norm");
-  //cb.cp().process({"fakes_data"})
-  //   .RenameSystematic(cb, "CMS_ttHl_FRe_shape_pt", "CMS_ttHl16_FRe_pt");
-  //cb.cp().process({"fakes_data"})
-  //   .RenameSystematic(cb, "CMS_ttHl_FRe_shape_eta", ??);
+  cb.cp().process({"fakes_data"})
+     .RenameSystematic(cb, "CMS_ttHl_FRe_shape_pt", "CMS_ttHl16_FRe_pt");
+  cb.cp().process({"fakes_data"})
+     .RenameSystematic(cb, "CMS_ttHl_FRe_shape_eta", "CMS_ttHl16_FRe_be");
   //cb.cp().process({"fakes_data"})
   //   .RenameSystematic(cb, "CMS_ttHl_FRe_shape_eta_barrel", ??);
   //cb.cp().process({"fakes_data"})
   //   .RenameSystematic(cb, "CMS_ttHl_FRm_norm", "CMS_ttHl16_FRm_norm");
   cb.cp().process({"fakes_data"})
      .RenameSystematic(cb, "CMS_ttHl_FRm_shape_pt", "CMS_ttHl16_FRm_pt");
-  //cb.cp().process({"fakes_data"})
-  //  .RenameSystematic(cb, "CMS_ttHl_FRm_shape_eta", ??);
+  cb.cp().process({"fakes_data"})
+    .RenameSystematic(cb, "CMS_ttHl_FRm_shape_eta", "CMS_ttHl16_FRm_be");
+  //so I rename all my CMS_ttHl_FRe_shape_eta to your _be
 
   // Finally we iterate through bins and write a
   // datacard.

@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_Convs", "lnN", SystMap<>::init(1.5));
   // Xanda: on the datacards we do have thu_shape
 
-  cb.cp().process({"fakes_data"})
+  cb.cp().process({"fakes_data", bkg_procs_faketau, sig_procs_faketau})
       .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.3));
 
   if ( add_shape_sys ) {
@@ -350,16 +350,16 @@ int main(int argc, char** argv) {
   //   .RenameSystematic(cb, "CMS_ttHl_FRm_norm", "shape", SystMap<>::init(1.0));
   cb.cp().process({"fakes_data"})
      .RenameSystematic(cb, "CMS_ttHl_FRe_shape_pt", "CMS_ttHl16_FRe_pt");
-  //cb.cp().process({"fakes_data"})
-  //   .RenameSystematic(cb, "CMS_ttHl_FRe_shape_eta", ??);
+  cb.cp().process({"fakes_data"})
+     .RenameSystematic(cb, "CMS_ttHl_FRe_shape_eta", "CMS_ttHl16_FRe_be");
   //cb.cp().process({"fakes_data"})
   //   .RenameSystematic(cb, "CMS_ttHl_FRe_shape_eta_barrel", ??);
   //cb.cp().process({"fakes_data"})
   //   .RenameSystematic(cb, "CMS_ttHl_FRm_norm", "shape", SystMap<>::init(1.0));
   cb.cp().process({"fakes_data"})
      .RenameSystematic(cb, "CMS_ttHl_FRm_shape_pt", "CMS_ttHl16_FRm_pt");
-  //cb.cp().process({"fakes_data"})
-  //  .RenameSystematic(cb, "CMS_ttHl_FRm_shape_eta", "shape", SystMap<>::init(1.0));
+  cb.cp().process({"fakes_data"})
+    .RenameSystematic(cb, "CMS_ttHl_FRm_shape_eta", "CMS_ttHl16_FRe_be");
 
   // Finally we iterate through bins and write a
   // datacard.
