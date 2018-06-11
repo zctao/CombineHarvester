@@ -205,8 +205,14 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_Convs", "lnN", SystMap<>::init(1.5));
   // Xanda: on the datacards we do have thu_shape
 
-  cb.cp().process(ch::JoinStr({{"fakes_data"}, bkg_procs_faketau, sig_procs_faketau}))
+  cb.cp().process({"fakes_data"})
       .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.3));
+
+  cb.cp().process({"fakes_data"})
+      .AddSyst(cb, "CMS_ttHl_fakes_tau", "lnN", SystMap<>::init(1.2));
+
+  cb.cp().process(ch::JoinStr({bkg_procs_faketau, sig_procs_faketau}))
+      .AddSyst(cb, "CMS_ttHl_fakes_MC_tau", "lnN", SystMap<>::init(1.3));
 
   if ( add_shape_sys ) {
      // Xanda: guess what is what (see on rename section)
