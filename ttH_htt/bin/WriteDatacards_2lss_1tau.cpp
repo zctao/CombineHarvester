@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
   cb.cp().process({"ttH_hzz_gentau", "ttH_hzz_faketau"})
       .AddSyst(cb, "BR_hzz", "lnN", SystMap<>::init(1.0154));
   cb.cp().process({"ttH_htt_gentau", "ttH_htt_faketau"})
-      .AddSyst(cb, "BR_hzz", "lnN", SystMap<>::init(1.0165));
+      .AddSyst(cb, "BR_htt", "lnN", SystMap<>::init(1.0165));
   // Xanda : check if the bellow needs to be renamed https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L98-L104
   if ( add_shape_sys && add_th_shape_sys ) {
     cb.cp().process(sig_procs)
@@ -205,10 +205,7 @@ int main(int argc, char** argv) {
   // Xanda: on the datacards we do have thu_shape
 
   cb.cp().process(ch::JoinStr({{"fakes_data"}, bkg_procs_faketau, sig_procs_faketau}))
-      .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.3));
-
-  cb.cp().process({"fakes_data"})
-      .AddSyst(cb, "CMS_ttHl_fakes_tau", "lnN", SystMap<>::init(1.2));
+      .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.5));
 
   cb.cp().process(ch::JoinStr({bkg_procs_faketau, sig_procs_faketau}))
       .AddSyst(cb, "CMS_ttHl_fakes_MC_tau", "lnN", SystMap<>::init(1.3));
