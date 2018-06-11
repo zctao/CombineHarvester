@@ -197,8 +197,10 @@ TH1* divideHistogramByBinWidth(TH1* histogram)
     if ( binContent < 0. ) binContent = 0.;
     double binError = histogram->GetBinError(iBin);
     double binWidth = xAxis->GetBinWidth(iBin);
-    histogramDensity->SetBinContent(iBin, binContent); ///binWidth
-    histogramDensity->SetBinError(iBin, binError); ///binWidth
+    //histogramDensity->SetBinContent(iBin, binContent); ///binWidth
+    //histogramDensity->SetBinError(iBin, binError); ///binWidth
+		histogramDensity->SetBinContent(iBin, binContent/binWidth); //
+    histogramDensity->SetBinError(iBin, binError/binWidth); //
 		if ( binContent <= 0. ) {histogramDensity->SetBinError(iBin, 0.);}
   }
   return histogramDensity;
@@ -603,7 +605,7 @@ std::cout << "here 4 " <<  std::endl;
     legend1->AddEntry(histogram_data_forLegend, "Observed", "p");
     legend1->AddEntry(histogram_ttH_density, "t#bar{t}H", "f");
     legend1->AddEntry(histogram_ttZ_density, "t#bar{t}Z", "f");
-    legend1->AddEntry(histogram_ttW_density, "t#bar{t}W", "f");
+    legend1->AddEntry(histogram_ttW_density, "t#bar{t}W + t#bar{t}WW", "f");
     legend1->Draw();
     TLegend* legend2 = new TLegend(0.6600, legend_y01, 0.9350, 0.9250, NULL, "brNDC");
     legend2->SetFillStyle(0);
@@ -825,7 +827,8 @@ void makePostFitPlots(
   std::vector<std::string> categories;
   std::string channelC="ttH_";
   channelC.append(channel.data());
-  channelC.append("_prefit");
+  //channelC.append("_prefit");
+  channelC.append("_postfit");
 
   categories.push_back(channelC); //"ttH_1l_2tau_prefit");
   //categories.push_back("ttH_1l_2tau_postfit");
@@ -838,7 +841,7 @@ void makePostFitPlots(
   fileI.append("_shapes.root");
   inputFileNames[channelC]  = fileI;
 
-  bool doKeepBlinded = false; //true;
+  bool doKeepBlinded = true;
 
   for ( std::vector<std::string>::const_iterator category = categories.begin();
 	category != categories.end(); ++category ) {
@@ -876,6 +879,12 @@ void makePostFitPlots(
     std::cout << "histogram_ttW = " << histogram_ttW << std::endl;
     makeBinContentsPositive(histogram_ttW);
     dumpHistogram(histogram_ttW);
+
+		TH1* histogram_ttWW = loadHistogram(inputFile, *category, "TTWW", gentau);
+    std::cout << "histogram_ttWW = " << histogram_ttWW << std::endl;
+    makeBinContentsPositive(histogram_ttWW);
+    dumpHistogram(histogram_ttWW);
+		histogram_ttW->Add(histogram_ttWW);
 
     TH1* histogram_EWK = loadHistogram(inputFile, *category, "EWK", gentau);
     std::cout << "histogram_EWK = " << histogram_EWK << std::endl;
@@ -922,8 +931,8 @@ void makePostFitPlots(
 
     std::string outputFilePath = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/ttH_htt/";
     std::string outputFileName = Form("%s/%s/%s_%s.pdf", source.data(),dir.data(), category->data(),name.data());
-		//std::string labelY = Form("dN/%s", labelX.c_str());
-		std::string labelY = Form("%s", "Events");
+		std::string labelY = Form("dN/%s", labelX.c_str());
+		//std::string labelY = Form("%s", "dEvents/bin");
 
     makePlot(histogram_data, doKeepBlinded,
 	     histogram_ttH,
