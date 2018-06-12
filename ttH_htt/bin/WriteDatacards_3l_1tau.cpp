@@ -18,6 +18,7 @@ using namespace std;
 using boost::starts_with;
 namespace po = boost::program_options;
 
+// Xanda: keeping this one for more two days while the Cornell cards with MC splitting are not ready
 int main(int argc, char** argv) {
   bool add_tH = true;
   bool add_TTWW = true;
