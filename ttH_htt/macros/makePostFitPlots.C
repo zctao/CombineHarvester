@@ -186,7 +186,7 @@ void checkCompatibleBinning(const TH1* histogram1, const TH1* histogram2)
   }
 }
 
-TH1* divideHistogramByBinWidth(TH1* histogram)
+TH1* divideHistogramByBinWidth(TH1* histogram, bool divideByBinWidth)
 {
   std::string histogramDensityName = Form("%s_density", histogram->GetName());
   TH1* histogramDensity = (TH1*)histogram->Clone(histogramDensityName.data());
@@ -197,10 +197,13 @@ TH1* divideHistogramByBinWidth(TH1* histogram)
     if ( binContent < 0. ) binContent = 0.;
     double binError = histogram->GetBinError(iBin);
     double binWidth = xAxis->GetBinWidth(iBin);
-    histogramDensity->SetBinContent(iBin, binContent); ///binWidth
-    histogramDensity->SetBinError(iBin, binError); ///binWidth
-		//histogramDensity->SetBinContent(iBin, binContent/binWidth); //
-    //histogramDensity->SetBinError(iBin, binError/binWidth); //
+		if ( !divideByBinWidth ) {
+	    histogramDensity->SetBinContent(iBin, binContent);
+	    histogramDensity->SetBinError(iBin, binError);
+		} else {
+			histogramDensity->SetBinContent(iBin, binContent/binWidth); //
+	    histogramDensity->SetBinError(iBin, binError/binWidth); //
+		}
 		if ( binContent <= 0. ) {histogramDensity->SetBinError(iBin, 0.);}
   }
   return histogramDensity;
@@ -299,7 +302,8 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
 	      const std::string& outputFileName,
 	      bool useLogScale,
 				bool hasFlips,
-				bool hasConv
+				bool hasConv,
+				bool divideByBinWidth
 			)
 
 {
@@ -308,7 +312,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
 	std::cout << "entered functions "<< std::endl;
   TH1* histogram_data_density = 0;
   if ( histogram_data ) {
-    histogram_data_density = divideHistogramByBinWidth(histogram_data);
+    histogram_data_density = divideHistogramByBinWidth(histogram_data, divideByBinWidth);
   }
   histogram_data_density->SetMarkerColor(1);
   histogram_data_density->SetMarkerStyle(20);
@@ -321,7 +325,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   TH1* histogram_ttH_density = 0;
   if ( histogram_ttH ) {
     if ( histogram_data ) checkCompatibleBinning(histogram_ttH, histogram_data);
-    histogram_ttH_density = divideHistogramByBinWidth(histogram_ttH);
+    histogram_ttH_density = divideHistogramByBinWidth(histogram_ttH, divideByBinWidth);
   }
   histogram_ttH_density->SetFillColor(628);
   histogram_ttH_density->SetLineColor(1);
@@ -330,7 +334,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   TH1* histogram_ttZ_density = 0;
   if ( histogram_ttZ ) {
     if ( histogram_data ) checkCompatibleBinning(histogram_ttZ, histogram_data);
-    histogram_ttZ_density = divideHistogramByBinWidth(histogram_ttZ);
+    histogram_ttZ_density = divideHistogramByBinWidth(histogram_ttZ, divideByBinWidth);
   }
   histogram_ttZ_density->SetFillColor(822);
   histogram_ttZ_density->SetLineColor(1);
@@ -339,7 +343,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   TH1* histogram_ttW_density = 0;
   if ( histogram_ttW ) {
     if ( histogram_data ) checkCompatibleBinning(histogram_ttW, histogram_data);
-    histogram_ttW_density = divideHistogramByBinWidth(histogram_ttW);
+    histogram_ttW_density = divideHistogramByBinWidth(histogram_ttW, divideByBinWidth);
   }
   histogram_ttW_density->SetFillColor(823);
   histogram_ttW_density->SetLineColor(1);
@@ -348,7 +352,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   TH1* histogram_EWK_density = 0;
   if ( histogram_EWK ) {
     if ( histogram_data ) checkCompatibleBinning(histogram_EWK, histogram_data);
-    histogram_EWK_density = divideHistogramByBinWidth(histogram_EWK);
+    histogram_EWK_density = divideHistogramByBinWidth(histogram_EWK, divideByBinWidth);
 
   }
   histogram_EWK_density->SetFillColor(610);
@@ -358,7 +362,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   TH1* histogram_Rares_density = 0;
   if ( histogram_Rares ) {
     if ( histogram_data ) checkCompatibleBinning(histogram_Rares, histogram_data);
-    histogram_Rares_density = divideHistogramByBinWidth(histogram_Rares);
+    histogram_Rares_density = divideHistogramByBinWidth(histogram_Rares, divideByBinWidth);
   }
   histogram_Rares_density->SetFillColor(851);
   histogram_Rares_density->SetLineColor(1);
@@ -367,7 +371,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   TH1* histogram_fakes_density = 0;
   if ( histogram_fakes ) {
     if ( histogram_data ) checkCompatibleBinning(histogram_fakes, histogram_data);
-    histogram_fakes_density = divideHistogramByBinWidth(histogram_fakes);
+    histogram_fakes_density = divideHistogramByBinWidth(histogram_fakes, divideByBinWidth);
   }
   histogram_fakes_density->SetFillColor(1);
   histogram_fakes_density->SetFillStyle(3005);
@@ -380,7 +384,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
 	  if ( histogram_Flips ) {
 			std::cout << "test read flips "<< std::endl;
 	    if ( histogram_data ) checkCompatibleBinning(histogram_Flips, histogram_data);
-	    histogram_Flips_density = divideHistogramByBinWidth(histogram_Flips);
+	    histogram_Flips_density = divideHistogramByBinWidth(histogram_Flips, divideByBinWidth);
 	  }
 	  histogram_Flips_density->SetFillColor(1);
 	  histogram_Flips_density->SetFillStyle(3004);
@@ -393,7 +397,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
 	if ( hasConv ) {
 	  if ( histogram_Conv) {
 	    if ( histogram_data ) checkCompatibleBinning(histogram_Conv, histogram_data);
-	    histogram_Conv_density = divideHistogramByBinWidth(histogram_Conv);
+	    histogram_Conv_density = divideHistogramByBinWidth(histogram_Conv, divideByBinWidth);
 	  }
 	  histogram_Conv_density->SetFillColor(5);
 	  //histogram_Conv_density->SetFillStyle(3007);
@@ -404,7 +408,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   TH1* histogramSum_mc_density = 0;
   if ( histogramSum_mc ) {
     if ( histogram_data ) checkCompatibleBinning(histogramSum_mc, histogram_data);
-    histogramSum_mc_density = divideHistogramByBinWidth(histogramSum_mc);
+    histogramSum_mc_density = divideHistogramByBinWidth(histogramSum_mc, divideByBinWidth);
   }
   std::cout << "histogramSum_mc_density test = " << histogramSum_mc_density << std::endl;
   dumpHistogram(histogramSum_mc_density);
@@ -412,7 +416,7 @@ void makePlot(TH1* histogram_data, bool doKeepBlinded,
   TH1* histogramErr_mc_density = 0;
   if ( histogramErr_mc ) {
     if ( histogram_data ) checkCompatibleBinning(histogramErr_mc, histogram_data);
-    histogramErr_mc_density = divideHistogramByBinWidth(histogramErr_mc);
+    histogramErr_mc_density = divideHistogramByBinWidth(histogramErr_mc, divideByBinWidth);
   }
   setStyle_uncertainty(histogramErr_mc_density);
 
@@ -811,7 +815,10 @@ void makePostFitPlots(
 	std::string labelVar,
 	float minYPlot,
 	float maxYPlot,
-	bool gentau
+	bool gentau,
+	std::string typeFit,
+	bool divideByBinWidth,
+	bool doKeepBlinded = true
 )
 {
   gROOT->SetBatch(true);
@@ -827,21 +834,19 @@ void makePostFitPlots(
   std::vector<std::string> categories;
   std::string channelC="ttH_";
   channelC.append(channel.data());
-  //channelC.append("_prefit");
-  channelC.append("_postfit");
+  if (typeFit == "prefit") channelC.append("_prefit");
+  if (typeFit == "postfit") channelC.append("_postfit");
 
-  categories.push_back(channelC); //"ttH_1l_2tau_prefit");
+  categories.push_back(channelC);
   //categories.push_back("ttH_1l_2tau_postfit");
 
-  std::string inputFilePath =source.data(); // = string(getenv("CMSSW_BASE")) + "/src/CombineHarvester/ttH_htt/";
+  std::string inputFilePath =source.data();
   std::map<std::string, std::string> inputFileNames; // key = category
   std::string fileI=dir.data();
   fileI.append("/ttH_");
   fileI.append(name);
   fileI.append("_shapes.root");
   inputFileNames[channelC]  = fileI;
-
-  bool doKeepBlinded = true;
 
   for ( std::vector<std::string>::const_iterator category = categories.begin();
 	category != categories.end(); ++category ) {
@@ -952,7 +957,8 @@ void makePostFitPlots(
 			 channel,
 	     outputFileName,
 	     useLogPlot,
-			 hasFlips, hasConversions
+			 hasFlips, hasConversions,
+			 divideByBinWidth
 		 );
     std::cout<<"got out function"<<std::endl;
 
