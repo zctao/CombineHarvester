@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
   // datacard configuration and histograms etc.
   ch::CombineHarvester cb;
   // Uncomment this next line to see a *lot* of debug information
-  // cb.SetVerbosity(3);
+   cb.SetVerbosity(3);
 
   // Here we will just define two categories for an 8TeV analysis. Each entry in
   // the vector below specifies a bin name and corresponding bin_id.
@@ -86,12 +86,21 @@ int main(int argc, char** argv) {
   using ch::syst::era;
   using ch::syst::bin_id;
   using ch::syst::process;
+  using ch::syst::SystMapFunc;
 
   //! [part5]
   cb.cp().signals()
       .AddSyst(cb, "lumi_$ERA", "lnN", SystMap<era>::init
 	       ({"13TeV_2017"}, 1.023));
   //! [part5]
+
+  // normalizations floating individually (but ttWW correlated with ttW)
+  for ( auto s : {"ttH_hww", "ttH_hzz", "ttH_htt", "TTW", "TTZ"} ) {
+    cb.cp().process({s})
+        .AddSyst(cb, Form("%s_norm", s), "rateParam", SystMap<>::init(1.0));
+  }
+  cb.cp().process({"TTWW"})
+    .AddSyst(cb, "TTWW_norm", "rateParam", SystMapFunc<>::init("(@0)", "TTW_norm"));
 
   //! [part6]
   cb.cp().process(sig_procs)
@@ -101,12 +110,12 @@ int main(int argc, char** argv) {
   cb.cp().process(sig_procs)
       .AddSyst(cb, "BR_hbb", "lnN", SystMap<>::init(1.0126));
   // in this analysis un-splitted ttH sample is TTHnobb
-  cb.cp().process({"ttH_hww_gentau", "ttH_hww_faketau"})
+  cb.cp().process({"ttH_hww"})
       .AddSyst(cb, "BR_hvv", "lnN", SystMap<>::init(1.0154));
-  cb.cp().process({"ttH_hzz_gentau", "ttH_hzz_faketau"})
+  cb.cp().process({"ttH_hzz"})
       .AddSyst(cb, "BR_hzz", "lnN", SystMap<>::init(1.0154));
-  cb.cp().process({"ttH_htt_gentau", "ttH_htt_faketau"})
-      .AddSyst(cb, "BR_hzz", "lnN", SystMap<>::init(1.0165));
+  cb.cp().process({"ttH_htt"})
+      .AddSyst(cb, "BR_htt", "lnN", SystMap<>::init(1.0165));
   // Xanda : check if the bellow needs to be renamed https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L98-L104
   if ( add_shape_sys && add_th_shape_sys ) {
     cb.cp().process(sig_procs)
@@ -171,7 +180,7 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_Convs", "lnN", SystMap<>::init(1.5));
 
   cb.cp().process({"fakes_data"})
-      .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.3));
+      .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.5));
 
   cb.cp().process({"ttH_hww"})
       .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(2.0));
@@ -185,11 +194,24 @@ int main(int argc, char** argv) {
   cb.cp().process({"fakes_data"})
       .AddSyst(cb, "CMS_ttHl_Clos_e_norm", "lnN", SystMap<>::init(0.95));
 
+  if ( add_shape_sys ) {
+    cb.cp().process(bkg_procs)
+      .AddSyst(cb, "CMS_ttHl_FRjt_norm", "shape", SystMap<>::init(1.0));
+    cb.cp().process(bkg_procs)
+      .AddSyst(cb, "CMS_ttHl_FRjt_shape", "shape", SystMap<>::init(1.0));
+    // Xanda: do we add FRet_shift FRet_shift ? It is written on the datacards
+    // Do we add for fakes_data ? It is written on the datacards: fakes_data_CMS_ttHl_FRjt_normUp
+  }
+
   cb.cp().process({"fakes_data"})
     .AddSyst(cb, "CMS_ttHl_FRm_norm", "lnN", SystMap<>::init(1.3));
   cb.cp().process({"fakes_data"})
     .AddSyst(cb, "CMS_ttHl_FRe_norm", "lnN", SystMap<>::init(1.25));
 
+  //cb.cp().process({"fakes_data"})
+  //   .AddSyst(cb, "CMS_ttHl_FRe_shape_pt", "shape", SystMap<>::init(1.0));
+  //cb.cp().process({"fakes_data"})
+  //   .AddSyst(cb, "CMS_ttHl_FRe_shape_eta", "shape", SystMap<>::init(1.0));
 
   //cb.cp().process({"fakes_data"})
   //    .AddSyst(cb, "CMS_ttHl_FRe_shape_2lss_corr1", "shape", SystMap<>::init(1.0));

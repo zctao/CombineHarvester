@@ -56,8 +56,6 @@ int main(int argc, char** argv) {
     };
   // ch::Categories is just a typedef of vector<pair<int, string>>
   //! [part1]
-  // /home/karl/ttHAnalysis/2017/2018Jun08_3l1tau/datacards/3l_1tau/prepareDatacards_3l_1tau_mvaOutput_final.root
-
 
   //! [part2]
   vector<string> masses = {"*"};
@@ -68,17 +66,14 @@ int main(int argc, char** argv) {
   //! [part3]
 
   //! [part4]
-  vector<string> bkg_procs_MC = {"TTW", "TTZ", "EWK", "Rares"};
+  vector<string> bkg_procs_MC = {"TTW", "EWK", "Rares", "ttH_hww", "ttH_hzz", "ttH_htt"};
   if (add_tH) bkg_procs_MC.push_back("tH");
   if (add_TTWW) bkg_procs_MC.push_back("TTWW");
   // Xanda: check if EWK should be here == if it is normalized to cx and lumi
   vector<string> bkg_procs;
-  vector<string> bkg_procs_gentau;
-  vector<string> bkg_procs_faketau;
   for(unsigned int i_b=0;i_b<bkg_procs_MC.size();i_b++){
     string bkg_name = bkg_procs_MC[i_b];
     bkg_procs.push_back(bkg_name);
-    bkg_procs_gentau.push_back(bkg_name);
   }
   bkg_procs.push_back("fakes_data");
   bkg_procs.push_back("conversions");
@@ -88,14 +83,11 @@ int main(int argc, char** argv) {
 
   cb.AddProcesses({"*"}, {"*"}, {"13TeV"}, {"*"}, bkg_procs, cats, false);
 
-  vector<string> sig_procs_MC = {"ttH_hww", "ttH_hzz", "ttH_htt"};
+  vector<string> sig_procs_MC = {"TTZ"};
   vector<string> sig_procs;
-  vector<string> sig_procs_gentau;
-  vector<string> sig_procs_faketau;
   for(unsigned int i_s=0;i_s<sig_procs_MC.size();i_s++){
     string sig_name = sig_procs_MC[i_s];
     sig_procs.push_back(sig_name);
-    sig_procs_gentau.push_back(sig_name);
   }
   cb.AddProcesses(masses, {"*"}, {"13TeV"}, {"*"}, sig_procs, cats, true);
   //! [part4]
@@ -104,9 +96,24 @@ int main(int argc, char** argv) {
   // we'll make some using declarations first to simplify things a bit.
   using ch::syst::SystMap;
   using ch::syst::SystMapAsymm;
+  using ch::syst::SystMapFunc;
   using ch::syst::era;
   using ch::syst::bin_id;
   using ch::syst::process;
+
+  //>In the final analysis, we discussed in the past that we will use a fit model in
+  //>which the normalization of the ttH signal, as well as the normalization of the
+  //>TTW and >TTZ backgrounds are allowed to freely float. The assumption was
+  //>that the TTWW background will float by the same multiplicative factor as the
+  //>TTW background.
+
+  // normalizations floating individually (but ttWW correlated with ttW)
+  for ( auto s : {"ttH_hww", "ttH_hzz", "ttH_htt", "TTW", "TTZ"} ) {
+    cb.cp().process({s})
+        .AddSyst(cb, Form("%s_norm", s), "rateParam", SystMap<>::init(1.0));
+  }
+  cb.cp().process({"TTWW"})
+    .AddSyst(cb, "TTWW_norm", "rateParam", SystMapFunc<>::init("(@0)", "TTW_norm"));
 
   //! [part5]
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
@@ -127,7 +134,7 @@ int main(int argc, char** argv) {
   cb.cp().process({"ttH_hzz"})
       .AddSyst(cb, "BR_hzz", "lnN", SystMap<>::init(1.0154));
   cb.cp().process({"ttH_htt"})
-      .AddSyst(cb, "BR_hzz", "lnN", SystMap<>::init(1.0165));
+      .AddSyst(cb, "BR_htt", "lnN", SystMap<>::init(1.0165));
   // Xanda : check if the bellow needs to be renamed https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L98-L104
   if ( add_shape_sys && add_th_shape_sys ) {
     cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
@@ -196,26 +203,26 @@ int main(int argc, char** argv) {
   // Xanda: on the datacards we do have thu_shape
 
   cb.cp().process({"fakes_data"})
-      .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.3));
+      .AddSyst(cb, "CMS_ttHl_fakes", "lnN", SystMap<>::init(1.5));
 
   if ( add_shape_sys ) {
      // Xanda: guess what is what (see on rename section)
      // https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L140-L163
      //cb.cp().process({"fakes_data"})
      //   .AddSyst(cb, "CMS_ttHl_FRe_norm", "shape", SystMap<>::init(1.0));
-     cb.cp().process({"fakes_data"})
-        .AddSyst(cb, "CMS_ttHl_FRe_shape_pt", "shape", SystMap<>::init(1.0));
-     cb.cp().process({"fakes_data"})
-        .AddSyst(cb, "CMS_ttHl_FRe_shape_eta", "shape", SystMap<>::init(1.0));
-     cb.cp().process({"fakes_data"})
-        .AddSyst(cb, "CMS_ttHl_FRe_shape_eta_barrel", "shape", SystMap<>::init(1.0));
+     //cb.cp().process({"fakes_data"})
+     //   .AddSyst(cb, "CMS_ttHl_FRe_shape_pt", "shape", SystMap<>::init(1.0));
+     //cb.cp().process({"fakes_data"})
+     //   .AddSyst(cb, "CMS_ttHl_FRe_shape_eta", "shape", SystMap<>::init(1.0));
+     //cb.cp().process({"fakes_data"})
+     //   .AddSyst(cb, "CMS_ttHl_FRe_shape_eta_barrel", "shape", SystMap<>::init(1.0));
 
      //cb.cp().process({"fakes_data"})
      //   .AddSyst(cb, "CMS_ttHl_FRm_norm", "shape", SystMap<>::init(1.0));
-     cb.cp().process({"fakes_data"})
-        .AddSyst(cb, "CMS_ttHl_FRm_shape_pt", "shape", SystMap<>::init(1.0));
-    cb.cp().process({"fakes_data"})
-       .AddSyst(cb, "CMS_ttHl_FRm_shape_eta", "shape", SystMap<>::init(1.0));
+     //cb.cp().process({"fakes_data"})
+    //    .AddSyst(cb, "CMS_ttHl_FRm_shape_pt", "shape", SystMap<>::init(1.0));
+    //cb.cp().process({"fakes_data"})
+    //   .AddSyst(cb, "CMS_ttHl_FRm_shape_eta", "shape", SystMap<>::init(1.0));
      //cb.cp().process({"fakes_data"})
      //   .AddSyst(cb, "CMS_ttHl_FRm_b", "shape", SystMap<>::init(1.0));
      //cb.cp().process({"fakes_data"})
@@ -250,23 +257,23 @@ int main(int argc, char** argv) {
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_tight", "lnN", SystMap<>::init(1.09));
 
-  //cb.cp().process(bkg_procs)
-  //    .AddSyst(cb, "CMS_ttHl_tauID", "lnN", SystMap<>::init(1.05));
+  cb.cp().process(bkg_procs)
+      .AddSyst(cb, "CMS_ttHl_tauID", "lnN", SystMap<>::init(1.05));
 
-  //if ( add_shape_sys ) {
-  //  cb.cp().process(bkg_procs_faketau)
-  //    .AddSyst(cb, "CMS_ttHl_FRjt_norm", "shape", SystMap<>::init(1.0));
-  //  cb.cp().process(bkg_procs_faketau)
-  //    .AddSyst(cb, "CMS_ttHl_FRjt_shape", "shape", SystMap<>::init(1.0));
+  if ( add_shape_sys ) {
+    cb.cp().process(bkg_procs)
+      .AddSyst(cb, "CMS_ttHl_FRjt_norm", "shape", SystMap<>::init(1.0));
+    cb.cp().process(bkg_procs)
+      .AddSyst(cb, "CMS_ttHl_FRjt_shape", "shape", SystMap<>::init(1.0));
   //  // Xanda: do we add FRet_shift FRet_shift ? It is written on the datacards
   //  // Do we add for fakes_data ? It is written on the datacards: fakes_data_CMS_ttHl_FRjt_normUp
-  //}
+  }
 
   if ( add_shape_sys ) {
     cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
         .AddSyst(cb, "CMS_ttHl_JES", "shape", SystMap<>::init(1.0));
-    //cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-    //    .AddSyst(cb, "CMS_ttHl_tauES", "shape", SystMap<>::init(1.0));
+    cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+        .AddSyst(cb, "CMS_ttHl_tauES", "shape", SystMap<>::init(1.0));
   }
 
   //cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ","Rares"}}))
