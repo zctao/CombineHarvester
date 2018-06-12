@@ -26,7 +26,6 @@ int main(int argc, char** argv) {
   std::string input_file, output_file;
   double lumi = -1.;
   bool add_shape_sys = true;
-  //bool Cornell = false;
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
@@ -108,12 +107,16 @@ int main(int argc, char** argv) {
   //>TTW background.
 
   // normalizations floating individually (but ttWW correlated with ttW)
-  for ( auto s : {"ttH_hww", "ttH_hzz", "ttH_htt", "TTW", "TTZ"} ) {
+  for ( auto s : {"ttH_htt", "TTW", "TTZ"} ) {
     cb.cp().process({s})
-        .AddSyst(cb, Form("%s_norm", s), "rateParam", SystMap<>::init(1.0));
+        .AddSyst(cb, Form("scale_%s", s), "rateParam", SystMap<>::init(1.0));
   }
   cb.cp().process({"TTWW"})
-    .AddSyst(cb, "TTWW_norm", "rateParam", SystMapFunc<>::init("(@0)", "TTW_norm"));
+    .AddSyst(cb, "scale_TTWW", "rateParam", SystMapFunc<>::init("(@0)", "scale_TTW"));
+  for ( auto s : {"ttH_hww", "ttH_hzz"} ) {
+    cb.cp().process({s})
+        .AddSyst(cb, Form("scale_%s", s), "rateParam", SystMapFunc<>::init("(@0)", "scale_ttH_htt"));
+  }
 
   //! [part5]
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))

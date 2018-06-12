@@ -72,10 +72,10 @@ int main(int argc, char** argv) {
   //! [part4]
 
   vector<string> bkg_procs = { "TTZ", "EWK", "Rares", "fakes_data", "flips_data", "conversions", "tH", "TTWW", "ttH_hww", "ttH_hzz", "ttH_htt"};
+  vector<string> bkg_procs_MConly = { "TTZ", "EWK", "Rares", "conversions", "tH", "TTWW", "ttH_hww", "ttH_hzz", "ttH_htt"};
+  vector<string> sig_procs = {"TTW"};
 
   cb.AddProcesses({"*"}, {"*"}, {"13TeV"}, {"*"}, bkg_procs, cats, false);
-
-  vector<string> sig_procs = {"TTW"};
   cb.AddProcesses(masses, {"*"}, {"13TeV"}, {"*"}, sig_procs, cats, true);
   //! [part4]
 
@@ -83,6 +83,7 @@ int main(int argc, char** argv) {
   // we'll make some using declarations first to simplify things a bit.
   using ch::syst::SystMap;
   using ch::syst::SystMapAsymm;
+  using ch::syst::SystMapFunc;
   using ch::syst::era;
   using ch::syst::bin_id;
   using ch::syst::process;
@@ -95,12 +96,16 @@ int main(int argc, char** argv) {
   //! [part5]
 
   // normalizations floating individually (but ttWW correlated with ttW)
-  for ( auto s : {"ttH_hww", "ttH_hzz", "ttH_htt", "TTW", "TTZ"} ) {
+  for ( auto s : {"ttH_htt", "TTW", "TTZ"} ) {
     cb.cp().process({s})
-        .AddSyst(cb, Form("%s_norm", s), "rateParam", SystMap<>::init(1.0));
+        .AddSyst(cb, Form("scale_%s", s), "rateParam", SystMap<>::init(1.0));
   }
   cb.cp().process({"TTWW"})
-    .AddSyst(cb, "TTWW_norm", "rateParam", SystMapFunc<>::init("(@0)", "TTW_norm"));
+    .AddSyst(cb, "scale_TTWW", "rateParam", SystMapFunc<>::init("(@0)", "scale_TTW"));
+  for ( auto s : {"ttH_hww", "ttH_hzz"} ) {
+    cb.cp().process({s})
+        .AddSyst(cb, Form("scale_%s", s), "rateParam", SystMapFunc<>::init("(@0)", "scale_ttH_htt"));
+  }
 
   //! [part6]
   cb.cp().process(sig_procs)
@@ -228,20 +233,20 @@ int main(int argc, char** argv) {
   cb.cp().process({"flips_data"})
       .AddSyst(cb, "CMS_ttHl_QF", "lnN", SystMap<>::init(1.3));
 
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.02));
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_elloose", "lnN", SystMap<>::init(1.03));
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_muloose", "lnN", SystMap<>::init(1.03));
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_tight", "lnN", SystMap<>::init(1.06));
-  cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH"}}))
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_tauID", "lnN", SystMap<>::init(1.1));
   if ( add_shape_sys ) {
-    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "conversions", "tH"}}))
+    cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
         .AddSyst(cb, "CMS_ttHl_JES", "shape", SystMap<>::init(1.0));
-    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "conversions", "tH"}}))
+    cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
         .AddSyst(cb, "CMS_ttHl_tauES", "shape", SystMap<>::init(1.0));
   }
 
@@ -251,7 +256,7 @@ int main(int argc, char** argv) {
 
   if ( add_shape_sys ) {
     for ( auto s : {"HF", "HFStats1", "HFStats2", "LF", "LFStats1", "LFStats2", "cErr1", "cErr2"} ) {
-      cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "Rares", "tH", "conversions"}}))
+      cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
           .AddSyst(cb, Form("CMS_ttHl_btag_%s", s), "shape", SystMap<>::init(1.0));
     }
   }
@@ -272,7 +277,7 @@ int main(int argc, char** argv) {
   //     with 2.3 corresponding to integrated luminosity of 2015 dataset
   if ( lumi > 0. ) {
     std::cout << "scaling signal and background yields to L=" << lumi << "fb^-1 @ 13 TeV." << std::endl;
-    cb.cp().process(ch::JoinStr({sig_procs, {"TTW", "TTZ", "WZ", "Rares", "tH", "fakes_data", "conversions"}})).ForEachProc([&](ch::Process* proc) {
+    cb.cp().process(ch::JoinStr({sig_procs, bkg_procs})).ForEachProc([&](ch::Process* proc) {
       proc->set_rate(proc->rate()*lumi/2.3);
     });
   }
@@ -299,6 +304,19 @@ int main(int argc, char** argv) {
 
   // We create the output root file that will contain all the shapes.
   TFile output(output_file.data(), "RECREATE");
+
+  if ( add_shape_sys ) {
+    for ( auto s : {"HFStats1", "HFStats2", "LFStats1", "LFStats2"} ) {
+      cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+          .RenameSystematic(cb, Form("CMS_ttHl_btag_%s", s), Form("CMS_ttHl17_btag_%s", s));
+    }
+    for ( auto s : {"HF", "LF", "cErr1", "cErr2"} ) {
+      cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+          .RenameSystematic(cb, Form("CMS_ttHl_btag_%s", s) , Form("CMS_ttHl16_btag_%s", s));
+    }
+  }
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+      .RenameSystematic(cb, "CMS_ttHl_JES", "CMS_scale_j");
 
   // Finally we iterate through bins and write a
   // datacard.

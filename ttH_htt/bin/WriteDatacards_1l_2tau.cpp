@@ -26,13 +26,15 @@ int main(int argc, char** argv) {
   std::string input_file, output_file;
   double lumi = -1.;
   bool add_shape_sys = false;
+  bool float_sig = false;
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
     ("input_file,i", po::value<string>(&input_file)->default_value("Tallinn/ttH_1l_2tau_2016Jul08_vTight.input.root"))
     ("output_file,o", po::value<string>(&output_file)->default_value("ttH_1l_2tau.root"))
     ("lumi,l", po::value<double>(&lumi)->default_value(lumi))
-    ("add_shape_sys,s", po::value<bool>(&add_shape_sys)->default_value(true));
+    ("add_shape_sys,s", po::value<bool>(&add_shape_sys)->default_value(true))
+    ("float_sig,f", po::value<bool>(&float_sig)->default_value(false));
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
 
@@ -88,6 +90,7 @@ int main(int argc, char** argv) {
   // we'll make some using declarations first to simplify things a bit.
   using ch::syst::SystMap;
   using ch::syst::SystMapAsymm;
+  using ch::syst::SystMapFunc;
   using ch::syst::era;
   using ch::syst::bin_id;
   using ch::syst::process;
@@ -97,6 +100,20 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "lumi_$ERA", "lnN", SystMap<era>::init
 	       ({"13TeV_2017"}, 1.023));
   //! [part5]
+
+  if ( float_sig ) {
+    // normalizations floating individually (but ttWW correlated with ttW)
+    for ( auto s : {"ttH_htt", "TTW", "TTZ"} ) {
+      cb.cp().process({s})
+          .AddSyst(cb, Form("scale_%s", s), "rateParam", SystMap<>::init(1.0));
+    }
+    cb.cp().process({"TTWW"})
+      .AddSyst(cb, "scale_TTWW", "rateParam", SystMapFunc<>::init("(@0)", "scale_TTW"));
+    for ( auto s : {"ttH_hww", "ttH_hzz"} ) {
+      cb.cp().process({s})
+          .AddSyst(cb, Form("scale_%s", s), "rateParam", SystMapFunc<>::init("(@0)", "scale_ttH_htt"));
+    }
+  }
 
   //! [part6]
   cb.cp().process(sig_procs)

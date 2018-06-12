@@ -18,7 +18,6 @@ using namespace std;
 using boost::starts_with;
 namespace po = boost::program_options;
 
-// Xanda: keeping this one for more two days while the Cornell cards with MC splitting are not ready
 int main(int argc, char** argv) {
   bool add_tH = true;
   bool add_TTWW = true;
@@ -27,14 +26,15 @@ int main(int argc, char** argv) {
   std::string input_file, output_file;
   double lumi = -1.;
   bool add_shape_sys = true;
-  //bool Cornell = false;
+  bool float_sig = false;
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
     ("input_file,i", po::value<string>(&input_file)->default_value("Tallinn/ttH_3l_1tau_2016Jul16_Tight.input.root"))
     ("output_file,o", po::value<string>(&output_file)->default_value("ttH_3l_1tau.root"))
     ("lumi,l", po::value<double>(&lumi)->default_value(lumi))
-    ("add_shape_sys,s", po::value<bool>(&add_shape_sys)->default_value(true));
+    ("add_shape_sys,s", po::value<bool>(&add_shape_sys)->default_value(true))
+    ("float_sig,f", po::value<bool>(&float_sig)->default_value(false));
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
 
@@ -115,9 +115,26 @@ int main(int argc, char** argv) {
   // we'll make some using declarations first to simplify things a bit.
   using ch::syst::SystMap;
   using ch::syst::SystMapAsymm;
+  using ch::syst::SystMapFunc;
   using ch::syst::era;
   using ch::syst::bin_id;
   using ch::syst::process;
+
+  if ( float_sig ) {
+    // normalizations floating individually (but ttWW correlated with ttW)
+    for ( auto s : {"TTW_faketau", "TTWW_gentau", "TTWW_gentau"} ) {
+      cb.cp().process({s})
+          .AddSyst(cb, Form("scale_%s", s), "rateParam", SystMap<>::init(1.0));
+    }
+    for ( auto s : {"TTWW_gentau", "TTWW_faketau", "TTW_gentau"} ) {
+      cb.cp().process({s})
+        .AddSyst(cb, "scale_TTWW", "rateParam", SystMapFunc<>::init("(@0)", "scale_TTW"));
+    }
+    for ( auto s : {"ttH_hww_gentau", "ttH_hzz_gentau", "ttH_hww_faketau", "ttH_hzz_faketau", "ttH_htt_faketau"} ) {
+      cb.cp().process({s})
+          .AddSyst(cb, Form("scale_%s", s), "rateParam", SystMapFunc<>::init("(@0)", "scale_ttH_htt"));
+    }
+  }
 
   //! [part5]
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))

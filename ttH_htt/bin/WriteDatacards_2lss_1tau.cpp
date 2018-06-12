@@ -26,6 +26,7 @@ int main(int argc, char** argv) {
   std::string input_file, output_file, bin_name;
   double lumi = -1.;
   bool add_shape_sys = true;
+  bool float_sig = false;
   po::variables_map vm;
   po::options_description config("configuration");
   config.add_options()
@@ -33,7 +34,8 @@ int main(int argc, char** argv) {
     ("output_file,o", po::value<string>(&output_file)->default_value("ttH_2lss_1tau.root"))
     ("lumi,l", po::value<double>(&lumi)->default_value(lumi))
     ("add_shape_sys,s", po::value<bool>(&add_shape_sys)->default_value(true))
-    ("bin_name,b", po::value<string>(&bin_name)->default_value("ttH_2lss_1tau"));
+    ("bin_name,b", po::value<string>(&bin_name)->default_value("ttH_2lss_1tau"))
+    ("float_sig,f", po::value<bool>(&float_sig)->default_value(false));
   po::store(po::command_line_parser(argc, argv).options(config).run(), vm);
   po::notify(vm);
 
@@ -116,14 +118,30 @@ int main(int argc, char** argv) {
   // we'll make some using declarations first to simplify things a bit.
   using ch::syst::SystMap;
   using ch::syst::SystMapAsymm;
+  using ch::syst::SystMapFunc;
   using ch::syst::era;
   using ch::syst::bin_id;
   using ch::syst::process;
 
+  if ( float_sig ) {
+    // normalizations floating individually (but ttWW correlated with ttW)
+    for ( auto s : {"TTW_faketau", "TTWW_gentau", "TTWW_gentau"} ) {
+      cb.cp().process({s})
+          .AddSyst(cb, Form("scale_%s", s), "rateParam", SystMap<>::init(1.0));
+    }
+    for ( auto s : {"TTWW_gentau", "TTWW_faketau", "TTW_gentau"} ) {
+      cb.cp().process({s})
+        .AddSyst(cb, "scale_TTWW", "rateParam", SystMapFunc<>::init("(@0)", "scale_TTW"));
+    }
+    for ( auto s : {"ttH_hww_gentau", "ttH_hzz_gentau", "ttH_hww_faketau", "ttH_hzz_faketau", "ttH_htt_faketau"} ) {
+      cb.cp().process({s})
+          .AddSyst(cb, Form("scale_%s", s), "rateParam", SystMapFunc<>::init("(@0)", "scale_ttH_htt"));
+    }
+  }
+
   //! [part5]
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
     .AddSyst(cb, "lumi_13TeV_2017", "lnN", SystMap<>::init(1.023));
-
   //! [part5]
 
   //! [part6]
