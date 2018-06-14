@@ -231,25 +231,19 @@ int main(int argc, char** argv) {
   if ( add_shape_sys ) {
     // Xanda: guess what is what (see on rename section)
     // https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L140-L163
-    //cb.cp().process({"fakes_data"})
-    //   .AddSyst(cb, "CMS_ttHl_FRe_norm", "shape", SystMap<>::init(1.0));
     cb.cp().process({"fakes_data"})
-       .AddSyst(cb, "CMS_ttHl_FRe_shape_pt", "shape", SystMap<>::init(1.0));
+       .AddSyst(cb, "CMS_ttHl17_FRe_norm", "shape", SystMap<>::init(1.0));
     cb.cp().process({"fakes_data"})
-       .AddSyst(cb, "CMS_ttHl_FRe_shape_eta", "shape", SystMap<>::init(1.0));
+       .AddSyst(cb, "CMS_ttHl17_FRe_pt", "shape", SystMap<>::init(1.0));
     cb.cp().process({"fakes_data"})
-       .AddSyst(cb, "CMS_ttHl_FRe_shape_eta_barrel", "shape", SystMap<>::init(1.0));
+       .AddSyst(cb, "CMS_ttHl17_FRe_be", "shape", SystMap<>::init(1.0));
 
-    //cb.cp().process({"fakes_data"})
-    //   .AddSyst(cb, "CMS_ttHl_FRm_norm", "shape", SystMap<>::init(1.0));
     cb.cp().process({"fakes_data"})
-       .AddSyst(cb, "CMS_ttHl_FRm_shape_pt", "shape", SystMap<>::init(1.0));
+       .AddSyst(cb, "CMS_ttHl17_FRm_norm", "shape", SystMap<>::init(1.0));
+    cb.cp().process({"fakes_data"})
+       .AddSyst(cb, "CMS_ttHl17_FRm_pt", "shape", SystMap<>::init(1.0));
    cb.cp().process({"fakes_data"})
-      .AddSyst(cb, "CMS_ttHl_FRm_shape_eta", "shape", SystMap<>::init(1.0));
-    //cb.cp().process({"fakes_data"})
-    //   .AddSyst(cb, "CMS_ttHl_FRm_b", "shape", SystMap<>::init(1.0));
-    //cb.cp().process({"fakes_data"})
-    //   .AddSyst(cb, "CMS_ttHl_FRm_ec", "shape", SystMap<>::init(1.0));
+	   .AddSyst(cb, "CMS_ttHl17_FRm_be", "shape", SystMap<>::init(1.0));
   }
 
   // Xanda: check value, it is channel deppendent
