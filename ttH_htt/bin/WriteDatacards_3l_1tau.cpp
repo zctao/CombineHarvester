@@ -276,7 +276,7 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_lepEff_tight", "lnN", SystMap<>::init(1.09));
 
   cb.cp().process(bkg_procs_gentau)
-      .AddSyst(cb, "CMS_ttHl_tauID", "lnN", SystMap<>::init(1.05));
+      .AddSyst(cb, "CMS_ttHl17_tauID", "lnN", SystMap<>::init(1.05));
 
   if ( add_shape_sys ) {
     cb.cp().process(bkg_procs_faketau)

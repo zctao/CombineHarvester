@@ -239,7 +239,7 @@ int main(int argc, char** argv) {
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_tight", "lnN", SystMap<>::init(1.09));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_ttHl_tauID", "lnN", SystMap<>::init(1.1));
+      .AddSyst(cb, "CMS_ttHl17_tauID", "lnN", SystMap<>::init(1.1));
   if ( add_shape_sys ) {
     cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
         .AddSyst(cb, "CMS_ttHl_JES", "shape", SystMap<>::init(1.0));
