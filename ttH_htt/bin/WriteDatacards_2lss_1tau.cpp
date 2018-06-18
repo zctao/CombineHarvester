@@ -263,9 +263,11 @@ int main(int argc, char** argv) {
   cb.cp().process({"flips_data"})
       .AddSyst(cb, "CMS_ttHl_QF", "lnN", SystMap<>::init(1.3));
 
-  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.02));
+  //cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+  //    .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.02));
   // Xanda: check -- on multilepton trigger syst it is shape
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+      .AddSyst(cb, "CMS_ttHl17_trigger", "shape", SystMap<>::init(1.0));
 
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_elloose", "lnN", SystMap<>::init(1.03));

@@ -264,7 +264,7 @@ int main(int argc, char** argv) {
    }*/
 
  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_ttHl17_trigger", "lnN", SystMap<>::init(1.03));
+      .AddSyst(cb, "CMS_ttHl17_trigger", "lnN", SystMap<>::init(1.05));
   // Xanda: check -- on multilepton trigger syst it is shape
 
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))

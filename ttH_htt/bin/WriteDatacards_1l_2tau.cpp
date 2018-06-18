@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
   }    
 
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.03));
+      .AddSyst(cb, "CMS_ttHl17_trigger_leptau", "lnN", SystMap<>::init(1.03));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_elloose", "lnN", SystMap<>::init(1.02));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))

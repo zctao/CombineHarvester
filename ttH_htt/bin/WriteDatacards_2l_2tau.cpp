@@ -230,8 +230,11 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_thu_shape_ttZ_y1", "shape", SystMap<>::init(1.0));
   }
 
+  //cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+  //    .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.03));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.03));
+      .AddSyst(cb, "CMS_ttHl17_trigger", "shape", SystMap<>::init(1.0));
+  
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_elloose", "lnN", SystMap<>::init(1.04));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
