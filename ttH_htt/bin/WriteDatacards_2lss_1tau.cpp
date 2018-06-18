@@ -252,13 +252,12 @@ int main(int argc, char** argv) {
   cb.cp().process({"fakes_data"})
       .AddSyst(cb, "CMS_ttHl17_Clos_m_norm", "lnN", SystMap<>::init(1.2));
 
-  // Xanda: check if it is missing from datacards on purpose
-  //if ( add_shape_sys ) {
-  //    cb.cp().process({"fakes_data"})
-  //       .AddSyst(cb, "CMS_ttHl_Clos_e_shape", "shape", SystMap<>::init(1.0));
-  //    cb.cp().process({"fakes_data"})
-  //       .AddSyst(cb, "CMS_ttHl_Clos_m_shape", "shape", SystMap<>::init(1.0));
-  //}
+  if ( add_shape_sys ) {
+      cb.cp().process({"fakes_data"})
+         .AddSyst(cb, "CMS_ttHl_Clos_e_shape", "shape", SystMap<>::init(1.0));
+      cb.cp().process({"fakes_data"})
+         .AddSyst(cb, "CMS_ttHl_Clos_m_shape", "shape", SystMap<>::init(1.0));
+  }
 
   cb.cp().process({"flips_data"})
       .AddSyst(cb, "CMS_ttHl_QF", "lnN", SystMap<>::init(1.3));
@@ -379,6 +378,11 @@ int main(int argc, char** argv) {
 	cb.cp().process(bkg_procs_faketau)
 		.RenameSystematic(cb, "CMS_ttHl_FRjt_shape", "CMS_ttHl17_FRjt_shape");
 
+	cb.cp().process({"fakes_data"})
+		.RenameSystematic(cb, "CMS_ttHl_Clos_e_shape", "CMS_ttHl17_Clos_e_shape");
+	cb.cp().process({"fakes_data"})
+		.RenameSystematic(cb, "CMS_ttHl_Clos_m_shape", "CMS_ttHl17_Clos_m_shape");
+	
 	cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .RenameSystematic(cb, "CMS_ttHl_JES", "CMS_scale_j");
   }

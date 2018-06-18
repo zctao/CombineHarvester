@@ -243,7 +243,7 @@ int main(int argc, char** argv) {
         .AddSyst(cb, "CMS_ttHl_FRm_norm", "shape", SystMap<>::init(1.0));
      cb.cp().process({"fakes_data"})
         .AddSyst(cb, "CMS_ttHl_FRm_pt", "shape", SystMap<>::init(1.0));
-    cb.cp().process({"fakes_data"})
+	 cb.cp().process({"fakes_data"})
 		.AddSyst(cb, "CMS_ttHl_FRm_be", "shape", SystMap<>::init(1.0));
   }
 
@@ -253,16 +253,13 @@ int main(int argc, char** argv) {
   cb.cp().process({"fakes_data"})
       .AddSyst(cb, "CMS_ttHl17_Clos_m_norm", "lnN", SystMap<>::init(1.1));
 
-  // Xanda: check if it is missing from datacards on purpose
-  /*if ( add_shape_sys ) {
-
-       cb.cp().process({"fakes_data"})
+  if ( add_shape_sys ) {
+	  cb.cp().process({"fakes_data"})
           .AddSyst(cb, "CMS_ttHl_Clos_e_shape", "shape", SystMap<>::init(1.0));
-       cb.cp().process({"fakes_data"})
-          .AddSyst(cb, "CMS_ttHl_Clos_m_shape", "shape", SystMap<>::init(1.0));
-
-   }*/
-
+	  cb.cp().process({"fakes_data"})
+          .AddSyst(cb, "CMS_ttHl_Clos_m_shape", "shape", SystMap<>::init(1.0));	  
+  }
+  
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl17_trigger", "lnN", SystMap<>::init(1.05));
   // Xanda: check -- on multilepton trigger syst it is shape
@@ -375,6 +372,11 @@ int main(int argc, char** argv) {
 		.RenameSystematic(cb, "CMS_ttHl_FRjt_norm", "CMS_ttHl17_FRjt_norm");
 	cb.cp().process(bkg_procs_faketau)
 		.RenameSystematic(cb, "CMS_ttHl_FRjt_shape", "CMS_ttHl17_FRjt_shape");
+
+	cb.cp().process({"fakes_data"})
+		.RenameSystematic(cb, "CMS_ttHl_Clos_e_shape", "CMS_ttHl17_Clos_e_shape");
+	cb.cp().process({"fakes_data"})
+		.RenameSystematic(cb, "CMS_ttHl_Clos_m_shape", "CMS_ttHl17_Clos_m_shape");
 	
 	cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
 		.RenameSystematic(cb, "CMS_ttHl_JES", "CMS_scale_j");
