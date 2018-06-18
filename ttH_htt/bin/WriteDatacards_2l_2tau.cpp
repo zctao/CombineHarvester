@@ -201,15 +201,15 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl17_fakes", "lnN", SystMap<>::init(1.5));
   if ( add_shape_sys ) {
     cb.cp().process({proc_fakes})
-      .AddSyst(cb, "CMS_ttHl17_FRjt_norm", "shape", SystMap<>::init(1.0));
+      .AddSyst(cb, "CMS_ttHl_FRjt_norm", "shape", SystMap<>::init(1.0));
     cb.cp().process({proc_fakes})
-      .AddSyst(cb, "CMS_ttHl17_FRjt_shape", "shape", SystMap<>::init(1.0));
+      .AddSyst(cb, "CMS_ttHl_FRjt_shape", "shape", SystMap<>::init(1.0));
   }    
 
-  cb.cp().process({proc_fakes})
-    .AddSyst(cb, "CMS_ttHl16_FRe_norm", "lnN", SystMap<>::init(1.25));
-  cb.cp().process({proc_fakes})
-    .AddSyst(cb, "CMS_ttHl16_FRm_norm", "lnN", SystMap<>::init(1.25));
+  //cb.cp().process({proc_fakes})
+  //  .AddSyst(cb, "CMS_ttHl16_FRe_norm", "lnN", SystMap<>::init(1.25));
+  //cb.cp().process({proc_fakes})
+  //  .AddSyst(cb, "CMS_ttHl16_FRm_norm", "lnN", SystMap<>::init(1.25));
   cb.cp().process({proc_fakes})
     .AddSyst(cb, "CMS_ttHl17_Clos_e_norm", "lnN", SystMap<>::init(0.95));
   cb.cp().process({proc_fakes})
@@ -233,7 +233,7 @@ int main(int argc, char** argv) {
   //cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
   //    .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.03));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_ttHl17_trigger", "shape", SystMap<>::init(1.0));
+      .AddSyst(cb, "CMS_ttHl_trigger", "shape", SystMap<>::init(1.0));
   
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_elloose", "lnN", SystMap<>::init(1.04));
@@ -322,6 +322,14 @@ int main(int argc, char** argv) {
       cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
           .RenameSystematic(cb, Form("CMS_ttHl_btag_%s", s) , Form("CMS_ttHl16_btag_%s", s));
     }
+
+	cb.cp().process({proc_fakes})
+		.RenameSystematic(cb, "CMS_ttHl_FRjt_norm", "CMS_ttHl17_FRjt_norm");
+	cb.cp().process({proc_fakes})
+		.RenameSystematic(cb, "CMS_ttHl_FRjt_shape", "CMS_ttHl17_FRjt_shape");
+
+	cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+		.RenameSystematic(cb, "CMS_ttHl_trigger", "CMS_ttHl17_trigger");
   }
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .RenameSystematic(cb, "CMS_ttHl_JES", "CMS_scale_j");
