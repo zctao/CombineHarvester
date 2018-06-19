@@ -356,17 +356,17 @@ int main(int argc, char** argv) {
     }
 
 	cb.cp().process({"fakes_data"})
-		.RenameSystematic(cb, "CMS_ttHl_FRe_norm", "CMS_ttHl17_FRe_norm");
+		.RenameSystematic(cb, "CMS_ttHl_FRe_norm", "CMS_ttHl16_FRe_norm");
 	cb.cp().process({"fakes_data"})
-		.RenameSystematic(cb, "CMS_ttHl_FRe_pt", "CMS_ttHl17_FRe_pt");
+		.RenameSystematic(cb, "CMS_ttHl_FRe_pt", "CMS_ttHl16_FRe_pt");
 	cb.cp().process({"fakes_data"})
-		.RenameSystematic(cb, "CMS_ttHl_FRe_be", "CMS_ttHl17_FRe_be");
+		.RenameSystematic(cb, "CMS_ttHl_FRe_be", "CMS_ttHl16_FRe_be");
 	cb.cp().process({"fakes_data"})
-		.RenameSystematic(cb, "CMS_ttHl_FRm_norm", "CMS_ttHl17_FRm_norm");
+		.RenameSystematic(cb, "CMS_ttHl_FRm_norm", "CMS_ttHl16_FRm_norm");
 	cb.cp().process({"fakes_data"})
-		.RenameSystematic(cb, "CMS_ttHl_FRm_pt", "CMS_ttHl17_FRm_pt");
+		.RenameSystematic(cb, "CMS_ttHl_FRm_pt", "CMS_ttHl16_FRm_pt");
 	cb.cp().process({"fakes_data"})
-		.RenameSystematic(cb, "CMS_ttHl_FRm_be", "CMS_ttHl17_FRm_be");
+		.RenameSystematic(cb, "CMS_ttHl_FRm_be", "CMS_ttHl16_FRm_be");
 
 	cb.cp().process(bkg_procs_faketau)
 		.RenameSystematic(cb, "CMS_ttHl_FRjt_norm", "CMS_ttHl17_FRjt_norm");
