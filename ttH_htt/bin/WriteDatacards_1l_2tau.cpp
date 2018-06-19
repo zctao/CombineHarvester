@@ -198,13 +198,13 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl17_fakes", "lnN", SystMap<>::init(1.5));
   if ( add_shape_sys ) {
     cb.cp().process({proc_fakes})
-      .AddSyst(cb, "CMS_ttHl17_FRjt_norm", "shape", SystMap<>::init(1.0));
+      .AddSyst(cb, "CMS_ttHl_FRjt_norm", "shape", SystMap<>::init(1.0));
     cb.cp().process({proc_fakes})
-      .AddSyst(cb, "CMS_ttHl17_FRjt_shape", "shape", SystMap<>::init(1.0));
+      .AddSyst(cb, "CMS_ttHl_FRjt_shape", "shape", SystMap<>::init(1.0));
   }    
 
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.03));
+      .AddSyst(cb, "CMS_ttHl17_trigger_leptau", "lnN", SystMap<>::init(1.03));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_elloose", "lnN", SystMap<>::init(1.02));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
@@ -213,7 +213,7 @@ int main(int argc, char** argv) {
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_tight", "lnN", SystMap<>::init(1.03));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_ttHl_tauID", "lnN", SystMap<>::init(1.12));
+      .AddSyst(cb, "CMS_ttHl17_tauID", "lnN", SystMap<>::init(1.10));
   if ( add_shape_sys ) {
     cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
         .AddSyst(cb, "CMS_ttHl_JES", "shape", SystMap<>::init(1.0));
@@ -284,6 +284,11 @@ int main(int argc, char** argv) {
       cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
           .RenameSystematic(cb, Form("CMS_ttHl_btag_%s", s) , Form("CMS_ttHl16_btag_%s", s));
     }
+
+	cb.cp().process({proc_fakes})
+		.RenameSystematic(cb, "CMS_ttHl_FRjt_norm", "CMS_ttHl17_FRjt_norm");
+	cb.cp().process({proc_fakes})
+		.RenameSystematic(cb, "CMS_ttHl_FRjt_shape", "CMS_ttHl17_FRjt_shape");
   }
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .RenameSystematic(cb, "CMS_ttHl_JES", "CMS_scale_j");

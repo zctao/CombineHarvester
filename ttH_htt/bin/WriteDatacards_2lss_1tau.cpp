@@ -232,18 +232,18 @@ int main(int argc, char** argv) {
     // Xanda: guess what is what (see on rename section)
     // https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L140-L163
     cb.cp().process({"fakes_data"})
-       .AddSyst(cb, "CMS_ttHl17_FRe_norm", "shape", SystMap<>::init(1.0));
+       .AddSyst(cb, "CMS_ttHl_FRe_norm", "shape", SystMap<>::init(1.0));
     cb.cp().process({"fakes_data"})
-       .AddSyst(cb, "CMS_ttHl17_FRe_pt", "shape", SystMap<>::init(1.0));
+       .AddSyst(cb, "CMS_ttHl_FRe_pt", "shape", SystMap<>::init(1.0));
     cb.cp().process({"fakes_data"})
-       .AddSyst(cb, "CMS_ttHl17_FRe_be", "shape", SystMap<>::init(1.0));
+       .AddSyst(cb, "CMS_ttHl_FRe_be", "shape", SystMap<>::init(1.0));
 
     cb.cp().process({"fakes_data"})
-       .AddSyst(cb, "CMS_ttHl17_FRm_norm", "shape", SystMap<>::init(1.0));
+       .AddSyst(cb, "CMS_ttHl_FRm_norm", "shape", SystMap<>::init(1.0));
     cb.cp().process({"fakes_data"})
-       .AddSyst(cb, "CMS_ttHl17_FRm_pt", "shape", SystMap<>::init(1.0));
+       .AddSyst(cb, "CMS_ttHl_FRm_pt", "shape", SystMap<>::init(1.0));
    cb.cp().process({"fakes_data"})
-	   .AddSyst(cb, "CMS_ttHl17_FRm_be", "shape", SystMap<>::init(1.0));
+	   .AddSyst(cb, "CMS_ttHl_FRm_be", "shape", SystMap<>::init(1.0));
   }
 
   // Xanda: check value, it is channel deppendent
@@ -252,20 +252,21 @@ int main(int argc, char** argv) {
   cb.cp().process({"fakes_data"})
       .AddSyst(cb, "CMS_ttHl17_Clos_m_norm", "lnN", SystMap<>::init(1.2));
 
-  // Xanda: check if it is missing from datacards on purpose
-  //if ( add_shape_sys ) {
-  //    cb.cp().process({"fakes_data"})
-  //       .AddSyst(cb, "CMS_ttHl_Clos_e_shape", "shape", SystMap<>::init(1.0));
-  //    cb.cp().process({"fakes_data"})
-  //       .AddSyst(cb, "CMS_ttHl_Clos_m_shape", "shape", SystMap<>::init(1.0));
-  //}
+  if ( add_shape_sys ) {
+      cb.cp().process({"fakes_data"})
+         .AddSyst(cb, "CMS_ttHl_Clos_e_shape", "shape", SystMap<>::init(1.0));
+      cb.cp().process({"fakes_data"})
+         .AddSyst(cb, "CMS_ttHl_Clos_m_shape", "shape", SystMap<>::init(1.0));
+  }
 
   cb.cp().process({"flips_data"})
       .AddSyst(cb, "CMS_ttHl_QF", "lnN", SystMap<>::init(1.3));
 
-  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.02));
+  //cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+  //    .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.02));
   // Xanda: check -- on multilepton trigger syst it is shape
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+      .AddSyst(cb, "CMS_ttHl_trigger", "shape", SystMap<>::init(1.0));
 
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_elloose", "lnN", SystMap<>::init(1.03));
@@ -276,7 +277,7 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_lepEff_tight", "lnN", SystMap<>::init(1.06));
 
   cb.cp().process(sig_procs_gentau)
-      .AddSyst(cb, "CMS_ttHl_tauID", "lnN", SystMap<>::init(1.05));
+      .AddSyst(cb, "CMS_ttHl17_tauID", "lnN", SystMap<>::init(1.05));
 
   if ( add_shape_sys ) {
     cb.cp().process(bkg_procs_faketau)
@@ -355,26 +356,53 @@ int main(int argc, char** argv) {
       cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
           .RenameSystematic(cb, Form("CMS_ttHl_btag_%s", s) , Form("CMS_ttHl16_btag_%s", s));
     }
-  }
-  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+
+	cb.cp().process({"fakes_data"})
+		.RenameSystematic(cb, "CMS_ttHl_FRe_norm", "CMS_ttHl16_FRe_norm");
+	cb.cp().process({"fakes_data"})
+		.RenameSystematic(cb, "CMS_ttHl_FRe_pt", "CMS_ttHl16_FRe_pt");
+	cb.cp().process({"fakes_data"})
+		.RenameSystematic(cb, "CMS_ttHl_FRe_be", "CMS_ttHl16_FRe_be");
+	cb.cp().process({"fakes_data"})
+		.RenameSystematic(cb, "CMS_ttHl_FRm_norm", "CMS_ttHl16_FRm_norm");
+	cb.cp().process({"fakes_data"})
+		.RenameSystematic(cb, "CMS_ttHl_FRm_pt", "CMS_ttHl16_FRm_pt");
+	cb.cp().process({"fakes_data"})
+		.RenameSystematic(cb, "CMS_ttHl_FRm_be", "CMS_ttHl16_FRm_be");
+
+	cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+		.RenameSystematic(cb, "CMS_ttHl_trigger", "CMS_ttHl17_trigger");
+
+	cb.cp().process(bkg_procs_faketau)
+		.RenameSystematic(cb, "CMS_ttHl_FRjt_norm", "CMS_ttHl17_FRjt_norm");
+	cb.cp().process(bkg_procs_faketau)
+		.RenameSystematic(cb, "CMS_ttHl_FRjt_shape", "CMS_ttHl17_FRjt_shape");
+
+	cb.cp().process({"fakes_data"})
+		.RenameSystematic(cb, "CMS_ttHl_Clos_e_shape", "CMS_ttHl17_Clos_e_shape");
+	cb.cp().process({"fakes_data"})
+		.RenameSystematic(cb, "CMS_ttHl_Clos_m_shape", "CMS_ttHl17_Clos_m_shape");
+	
+	cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .RenameSystematic(cb, "CMS_ttHl_JES", "CMS_scale_j");
+  }
 
   // Xanda: guess what is what (see on rename section)
   // https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L140-L163
   //cb.cp().process({"fakes_data"})
   //   .RenameSystematic(cb, "CMS_ttHl_FRm_norm", "shape", SystMap<>::init(1.0));
-  cb.cp().process({"fakes_data"})
-     .RenameSystematic(cb, "CMS_ttHl_FRe_shape_pt", "CMS_ttHl16_FRe_pt");
-  cb.cp().process({"fakes_data"})
-     .RenameSystematic(cb, "CMS_ttHl_FRe_shape_eta", "CMS_ttHl16_FRe_be");
+  //cb.cp().process({"fakes_data"})
+  //   .RenameSystematic(cb, "CMS_ttHl_FRe_shape_pt", "CMS_ttHl16_FRe_pt");
+  //cb.cp().process({"fakes_data"})
+  //   .RenameSystematic(cb, "CMS_ttHl_FRe_shape_eta", "CMS_ttHl16_FRe_be");
   //cb.cp().process({"fakes_data"})
   //   .RenameSystematic(cb, "CMS_ttHl_FRe_shape_eta_barrel", ??);
   //cb.cp().process({"fakes_data"})
   //   .RenameSystematic(cb, "CMS_ttHl_FRm_norm", "shape", SystMap<>::init(1.0));
-  cb.cp().process({"fakes_data"})
-     .RenameSystematic(cb, "CMS_ttHl_FRm_shape_pt", "CMS_ttHl16_FRm_pt");
-  cb.cp().process({"fakes_data"})
-    .RenameSystematic(cb, "CMS_ttHl_FRm_shape_eta", "CMS_ttHl16_FRe_be");
+  //cb.cp().process({"fakes_data"})
+  //   .RenameSystematic(cb, "CMS_ttHl_FRm_shape_pt", "CMS_ttHl16_FRm_pt");
+  //cb.cp().process({"fakes_data"})
+  //  .RenameSystematic(cb, "CMS_ttHl_FRm_shape_eta", "CMS_ttHl16_FRe_be");
 
   // Finally we iterate through bins and write a
   // datacard.
