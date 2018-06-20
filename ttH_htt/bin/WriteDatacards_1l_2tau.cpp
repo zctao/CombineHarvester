@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 #include <cstdlib>
+#include <regex>
 #include "boost/program_options.hpp"
 #include <TString.h>
 #include "CombineHarvester/CombineTools/interface/CombineHarvester.h"
@@ -13,6 +14,7 @@
 #include "CombineHarvester/CombineTools/interface/Utilities.h"
 #include "CombineHarvester/CombineTools/interface/Systematics.h"
 #include "CombineHarvester/CombineTools/interface/BinByBin.h"
+#include "CombineHarvester/CombineTools/interface/CardWriter.h"
 
 using namespace std;
 using boost::starts_with;
@@ -201,7 +203,7 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_FRjt_norm", "shape", SystMap<>::init(1.0));
     cb.cp().process({proc_fakes})
       .AddSyst(cb, "CMS_ttHl_FRjt_shape", "shape", SystMap<>::init(1.0));
-  }    
+  }
 
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl17_trigger_leptau", "lnN", SystMap<>::init(1.03));
@@ -253,11 +255,12 @@ int main(int argc, char** argv) {
   }
 
   //! [part8]
-  auto bbb = ch::BinByBinFactory()
-    .SetAddThreshold(0.1)
-    .SetFixNorm(true);
-  bbb.SetPattern("CMS_$BIN_$PROCESS_bin_$#");
-  bbb.AddBinByBin(cb.cp().backgrounds(), cb);
+  //auto bbb = ch::BinByBinFactory()
+  //  .SetAddThreshold(0.1)
+  //  .SetFixNorm(true);
+  //bbb.SetPattern("CMS_$BIN_$PROCESS_bin_$#");
+  //bbb.AddBinByBin(cb.cp().backgrounds(), cb);
+  //cb.cp().process({"*"}).SetAutoMCStats(cb, 10);
 
   // This function modifies every entry to have a standardised bin name of
   // the form: {analysis}_{channel}_{bin_id}_{era}
@@ -273,7 +276,7 @@ int main(int argc, char** argv) {
   // instance.
 
   // We create the output root file that will contain all the shapes.
-  TFile output(output_file.data(), "RECREATE");
+  //TFile output(output_file.data(), "RECREATE");
 
   if ( add_shape_sys ) {
     for ( auto s : {"HFStats1", "HFStats2", "LFStats1", "LFStats2"} ) {
@@ -295,16 +298,25 @@ int main(int argc, char** argv) {
 
   // Finally we iterate through bins and write a
   // datacard.
+  string output_file_txt = output_file;
+  output_file_txt = regex_replace(output_file_txt, regex(".root"), ".txt");
+  ch::CardWriter writer(output_file_txt, output_file);
+  // writer.WriteCards("cmb", cb);
   for (auto b : bins) {
-    cout << ">> Writing datacard for bin: " << b
-	 << "\n";
+  //for(size_t n = 0; n < desc.categories.size(); ++n) {
+    cout << ">> Writing datacard for bin: " //<< b
+	 << "\n"<< output_file_txt<< "\n";
+
+
       // We need to filter on both the mass and the mass hypothesis,
       // where we must remember to include the "*" mass entry to get
       // all the data and backgrounds.
     //cb.cp().bin({b}).mass({"*"}).WriteDatacard(
     //	b + ".txt", output);
     cb.cp().bin({b}).mass({"*"}).WriteDatacard(
-      TString(output_file.data()).ReplaceAll(".root", ".txt").Data(), output);
+      "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/ttH.txt", output_file);
+    //writer.WriteCards(desc.categories.at(n), cb.cp().bin_id({int(n)}));
+
   }
   //! [part9]
 
