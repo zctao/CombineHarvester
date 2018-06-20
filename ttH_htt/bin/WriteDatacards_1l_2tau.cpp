@@ -123,11 +123,11 @@ int main(int argc, char** argv) {
   cb.cp().process(sig_procs)
       .AddSyst(cb, "BR_hbb", "lnN", SystMap<>::init(1.0126));
   // in this analysis un-splitted ttH sample is TTHnobb
-  cb.cp().process({"ttH_hww_gentau", "ttH_hww_faketau"})
+  cb.cp().process({"ttH_hww"})
       .AddSyst(cb, "BR_hvv", "lnN", SystMap<>::init(1.0154));
-  cb.cp().process({"ttH_hzz_gentau", "ttH_hzz_faketau"})
+  cb.cp().process({"ttH_hzz"})
       .AddSyst(cb, "BR_hzz", "lnN", SystMap<>::init(1.0154));
-  cb.cp().process({"ttH_htt_gentau", "ttH_htt_faketau"})
+  cb.cp().process({"ttH_htt"})
       .AddSyst(cb, "BR_htt", "lnN", SystMap<>::init(1.0165));
   // Xanda : check if the bellow needs to be renamed https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/plotter/ttH-multilepton/systsUnc.txt#L98-L104
   if ( add_shape_sys && add_th_shape_sys ) {
@@ -221,8 +221,8 @@ int main(int argc, char** argv) {
         .AddSyst(cb, "CMS_ttHl_tauES", "shape", SystMap<>::init(1.0));
   }
 
-  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_eff_m", "lnN", SystMap<>::init(1.02));
+  //cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+  //    .AddSyst(cb, "CMS_eff_m", "lnN", SystMap<>::init(1.02));
 
   if ( add_shape_sys ) {
     for ( auto s : {"HF", "HFStats1", "HFStats2", "LF", "LFStats1", "LFStats2", "cErr1", "cErr2"} ) {
