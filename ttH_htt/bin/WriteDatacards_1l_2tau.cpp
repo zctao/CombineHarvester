@@ -255,17 +255,7 @@ int main(int argc, char** argv) {
   }
 
   //! [part8]
-  //auto bbb = ch::BinByBinFactory()
-  //  .SetAddThreshold(0.1)
-  //  .SetFixNorm(true);
-  //bbb.SetPattern("CMS_$BIN_$PROCESS_bin_$#");
-  //bbb.AddBinByBin(cb.cp().backgrounds(), cb);
-  //cb.cp().process({"*"}).SetAutoMCStats(cb, 10);
-
-  // This function modifies every entry to have a standardised bin name of
-  // the form: {analysis}_{channel}_{bin_id}_{era}
-  // which is commonly used in the htt analyses
-  //ch::SetStandardBinNames(cb);
+  cb.cp().SetAutoMCStats(cb, 10);
   //! [part8]
 
   //! [part9]
@@ -274,9 +264,6 @@ int main(int argc, char** argv) {
   // This method will produce a set of unique bin names by considering all
   // Observation, Process and Systematic entries in the CombineHarvester
   // instance.
-
-  // We create the output root file that will contain all the shapes.
-  //TFile output(output_file.data(), "RECREATE");
 
   if ( add_shape_sys ) {
     for ( auto s : {"HFStats1", "HFStats2", "LFStats1", "LFStats2"} ) {
@@ -296,26 +283,15 @@ int main(int argc, char** argv) {
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .RenameSystematic(cb, "CMS_ttHl_JES", "CMS_scale_j");
 
-  // Finally we iterate through bins and write a
-  // datacard.
-  string output_file_txt = output_file;
-  output_file_txt = regex_replace(output_file_txt, regex(".root"), ".txt");
-  ch::CardWriter writer(output_file_txt, output_file);
-  // writer.WriteCards("cmb", cb);
   for (auto b : bins) {
-  //for(size_t n = 0; n < desc.categories.size(); ++n) {
-    cout << ">> Writing datacard for bin: " //<< b
-	 << "\n"<< output_file_txt<< "\n";
-
-
+    cout << ">> Writing datacard for bin: " << b
+	 << "\n Output file: "<< output_file<< "\n";
       // We need to filter on both the mass and the mass hypothesis,
       // where we must remember to include the "*" mass entry to get
       // all the data and backgrounds.
-    //cb.cp().bin({b}).mass({"*"}).WriteDatacard(
-    //	b + ".txt", output);
+      // it does not work anymore with TString (after update Havester to use SetAutoMCStats)
     cb.cp().bin({b}).mass({"*"}).WriteDatacard(
-      "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/ttH.txt", output_file);
-    //writer.WriteCards(desc.categories.at(n), cb.cp().bin_id({int(n)}));
+      output_file + ".txt" , output_file + ".root");
 
   }
   //! [part9]

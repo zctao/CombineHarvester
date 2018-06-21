@@ -204,7 +204,7 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_FRjt_norm", "shape", SystMap<>::init(1.0));
     cb.cp().process({proc_fakes})
       .AddSyst(cb, "CMS_ttHl_FRjt_shape", "shape", SystMap<>::init(1.0));
-  }    
+  }
 
   //cb.cp().process({proc_fakes})
   //  .AddSyst(cb, "CMS_ttHl16_FRe_norm", "lnN", SystMap<>::init(1.25));
@@ -234,7 +234,7 @@ int main(int argc, char** argv) {
   //    .AddSyst(cb, "CMS_ttHl_trigger_uncorr", "lnN", SystMap<>::init(1.03));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_trigger", "shape", SystMap<>::init(1.0));
-  
+
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl_lepEff_elloose", "lnN", SystMap<>::init(1.04));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
@@ -291,16 +291,7 @@ int main(int argc, char** argv) {
   }
 
   //! [part8]
-  auto bbb = ch::BinByBinFactory()
-    .SetAddThreshold(0.1)
-    .SetFixNorm(true);
-  bbb.SetPattern("CMS_$BIN_$PROCESS_bin_$#");
-  bbb.AddBinByBin(cb.cp().backgrounds(), cb);
-
-  // This function modifies every entry to have a standardised bin name of
-  // the form: {analysis}_{channel}_{bin_id}_{era}
-  // which is commonly used in the htt analyses
-  //ch::SetStandardBinNames(cb);
+  cb.cp().SetAutoMCStats(cb, 10);
   //! [part8]
 
   //! [part9]
@@ -309,9 +300,6 @@ int main(int argc, char** argv) {
   // This method will produce a set of unique bin names by considering all
   // Observation, Process and Systematic entries in the CombineHarvester
   // instance.
-
-  // We create the output root file that will contain all the shapes.
-  TFile output(output_file.data(), "RECREATE");
 
   if ( add_shape_sys ) {
     for ( auto s : {"HFStats1", "HFStats2", "LFStats1", "LFStats2"} ) {
@@ -344,8 +332,9 @@ int main(int argc, char** argv) {
       // all the data and backgrounds.
     //cb.cp().bin({b}).mass({"*"}).WriteDatacard(
     //	b + ".txt", output);
+    // it does not work anymore with TString (after update Havester to use SetAutoMCStats)
     cb.cp().bin({b}).mass({"*"}).WriteDatacard(
-      TString(output_file.data()).ReplaceAll(".root", ".txt").Data(), output);
+      output_file + ".txt" , output_file + ".root");
   }
   //! [part9]
 

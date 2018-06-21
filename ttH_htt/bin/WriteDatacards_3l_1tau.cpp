@@ -257,9 +257,9 @@ int main(int argc, char** argv) {
 	  cb.cp().process({"fakes_data"})
           .AddSyst(cb, "CMS_ttHl_Clos_e_shape", "shape", SystMap<>::init(1.0));
 	  cb.cp().process({"fakes_data"})
-          .AddSyst(cb, "CMS_ttHl_Clos_m_shape", "shape", SystMap<>::init(1.0));	  
+          .AddSyst(cb, "CMS_ttHl_Clos_m_shape", "shape", SystMap<>::init(1.0));
   }
-  
+
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl17_trigger", "lnN", SystMap<>::init(1.05));
   // Xanda: check -- on multilepton trigger syst it is shape
@@ -323,16 +323,7 @@ int main(int argc, char** argv) {
   }
 
   //! [part8]
-  auto bbb = ch::BinByBinFactory()
-    .SetAddThreshold(0.1)
-    .SetFixNorm(true);
-  bbb.SetPattern("CMS_$BIN_$PROCESS_bin_$#");
-  bbb.AddBinByBin(cb.cp().backgrounds(), cb);
-
-  // This function modifies every entry to have a standardised bin name of
-  // the form: {analysis}_{channel}_{bin_id}_{era}
-  // which is commonly used in the htt analyses
-  //ch::SetStandardBinNames(cb);
+  cb.cp().SetAutoMCStats(cb, 10);
   //! [part8]
 
   //! [part9]
@@ -341,9 +332,6 @@ int main(int argc, char** argv) {
   // This method will produce a set of unique bin names by considering all
   // Observation, Process and Systematic entries in the CombineHarvester
   // instance.
-
-  // We create the output root file that will contain all the shapes.
-  TFile output(output_file.data(), "RECREATE");
 
   if ( add_shape_sys ) {
     for ( auto s : {"HFStats1", "HFStats2", "LFStats1", "LFStats2"} ) {
@@ -377,7 +365,7 @@ int main(int argc, char** argv) {
 		.RenameSystematic(cb, "CMS_ttHl_Clos_e_shape", "CMS_ttHl17_Clos_e_shape");
 	cb.cp().process({"fakes_data"})
 		.RenameSystematic(cb, "CMS_ttHl_Clos_m_shape", "CMS_ttHl17_Clos_m_shape");
-	
+
 	cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
 		.RenameSystematic(cb, "CMS_ttHl_JES", "CMS_scale_j");
   }
@@ -408,8 +396,9 @@ int main(int argc, char** argv) {
       // We need to filter on both the mass and the mass hypothesis,
       // where we must remember to include the "*" mass entry to get
       // all the data and backgrounds.
+      // it does not work anymore with TString (after update Havester to use SetAutoMCStats)
     cb.cp().bin({b}).mass({"*"}).WriteDatacard(
-      TString(output_file.data()).ReplaceAll(".root", ".txt").Data(), output);
+      output_file + ".txt" , output_file + ".root");
   }
 
   //! [part9]
