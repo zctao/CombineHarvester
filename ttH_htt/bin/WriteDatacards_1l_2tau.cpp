@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
   po::options_description config("configuration");
   config.add_options()
     ("input_file,i", po::value<string>(&input_file)->default_value("Tallinn/ttH_1l_2tau_2016Jul08_vTight.input.root"))
-    ("output_file,o", po::value<string>(&output_file)->default_value("ttH_1l_2tau.root"))
+    ("output_file,o", po::value<string>(&output_file)->default_value("ttH_1l_2tau"))
     ("lumi,l", po::value<double>(&lumi)->default_value(lumi))
     ("add_shape_sys,s", po::value<bool>(&add_shape_sys)->default_value(true))
     ("float_sig,f", po::value<bool>(&float_sig)->default_value(false));
@@ -285,6 +285,8 @@ int main(int argc, char** argv) {
   }
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .RenameSystematic(cb, "CMS_ttHl_JES", "CMS_scale_j");
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+	  .RenameSystematic(cb, "CMS_ttHl_tauES", "CMS_scale_t");
 
   for (auto b : bins) {
     cout << ">> Writing datacard for bin: " << b
