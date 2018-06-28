@@ -236,11 +236,15 @@ int main(int argc, char** argv) {
       .AddSyst(cb, "CMS_ttHl_trigger", "shape", SystMap<>::init(1.0));
 
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_ttHl_lepEff_elloose", "lnN", SystMap<>::init(1.04));
+      .AddSyst(cb, "CMS_ttHl_lepEff_elloose", "shape", SystMap<>::init(1.0));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_ttHl_lepEff_muloose", "lnN", SystMap<>::init(1.03));
+      .AddSyst(cb, "CMS_ttHl_lepEff_muloose", "shape", SystMap<>::init(1.0));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
-      .AddSyst(cb, "CMS_ttHl_lepEff_tight", "lnN", SystMap<>::init(1.09));
+      .AddSyst(cb, "CMS_ttHl_lepEff_eltight", "shape", SystMap<>::init(1.0));
+  cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+      .AddSyst(cb, "CMS_ttHl_lepEff_mutight", "shape", SystMap<>::init(1.0));
+  //cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
+  //    .AddSyst(cb, "CMS_ttHl_lepEff_tight", "lnN", SystMap<>::init(1.09));
   cb.cp().process(ch::JoinStr({sig_procs, bkg_procs_MConly}))
       .AddSyst(cb, "CMS_ttHl17_tauID", "lnN", SystMap<>::init(1.1));
   if ( add_shape_sys ) {
